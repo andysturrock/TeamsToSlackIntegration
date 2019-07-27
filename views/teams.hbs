@@ -8,10 +8,10 @@
     </tr>
   </thead>
   <tbody>
-    {{#each teamsAndChannels}}
+    {{#each teamsAndChannels as |team|}}
     <tr>
-      <td>{{this.displayName}}</td>
-      <td>{{this.id}}</td>
+      <td>{{team.displayName}}</td>
+      <td>{{team.id}}</td>
       <td>
         <table class="table">
           <thead>
@@ -21,9 +21,11 @@
             </tr>
           </thead>
           <tbody>
-            {{#each this.channels}}
+            {{#each team.channels}}
             <tr>
-              <td>{{this.displayName}}</td>
+              <td>
+                <a href="/messages/{{team.id}}/{{this.id}}">{{this.displayName}}</a>
+              </td>
               <td>{{this.id}}</td>
             </tr>
             {{/each}}

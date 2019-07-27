@@ -24,6 +24,18 @@ module.exports = {
     catch (error) {
       console.log("Error: " + util.inspect(error))
     }
+  },
+
+  getMessages: async function (accessToken, team_id, channel_id) {
+    const client = getAuthenticatedClient(accessToken);
+
+    try {
+      messages = await getMessagesInChannel(client, team_id, channel_id)
+      return messages;
+    }
+    catch (error) {
+      console.log("Error: " + util.inspect(error))
+    }
   }
 };
 
@@ -51,7 +63,6 @@ async function getMyTeams(client) {
 }
 
 async function getChannelsInTeam(client, team_id) {
-
   const channels = await client
     .api(`/teams/${team_id}/channels`)
     .version('beta')
@@ -61,4 +72,11 @@ async function getChannelsInTeam(client, team_id) {
   return channels;
 }
 
+async function getMessagesInChannel(client, team_id, channel_id) {
+  const messages = await client
+    .api(`/teams/${team_id}/channels/${channel_id}/messages`)
+    .version('beta')
+    .get();
 
+  return messages;
+}

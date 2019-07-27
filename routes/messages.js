@@ -4,14 +4,17 @@ var tokens = require('../tokens.js');
 var graph = require('../graph.js');
 var util = require('util')
 
-router.get('/',
+router.get('/:team_id/:channel_id',
   async function(req, res) {
+    const team_id = req.params.team_id;
+    const channel_id = req.params.channel_id;
+
     if (!req.isAuthenticated()) {
       // Redirect unauthenticated requests to home page
       res.redirect('/')
     } else {
       let params = {
-        active: { teams: true }
+        active: { messages: true }
       };
 
       // Get the access token
@@ -27,18 +30,22 @@ router.get('/',
 
       if (accessToken && accessToken.length > 0) {
         try {
-          var teamsAndChannels = await graph.getTeamsAndChannels(accessToken);
-          console.log("teamsAndChannels:" + util.inspect(teamsAndChannels))
-          params.teamsAndChannels = teamsAndChannels;
+          var messages = await graph.getMessages(accessToken, team_id, channel_id);
+          console.log("messages:" + util.inspect(messages))
+
+          for(message of messages.value) {
+              console.log("Message body" + util.inspect(message.body))
+          }
+          params.messages = messages;
         } catch (err) {
           req.flash('error_msg', {
-            message: 'Could not fetch teams',
+            message: 'Could not fetch messages',
             debug: JSON.stringify(err)
           });
         }
       }
 
-      res.render('teams', params);
+      res.render('messages', params);
     }
   }
 );

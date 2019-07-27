@@ -31,10 +31,14 @@ router.get('/:team_id/:channel_id',
       if (accessToken && accessToken.length > 0) {
         try {
           var messages = await graph.getMessages(accessToken, team_id, channel_id);
-          console.log("messages:" + util.inspect(messages))
 
-          for(message of messages.value) {
+          for(message of messages) {
               console.log("Message body" + util.inspect(message.body))
+              console.log("Message from" + util.inspect(message.from.user))
+              const replies = await graph.getReplies(accessToken, team_id, channel_id, message.id);
+              for(reply of replies) {
+                console.log("reply body" + util.inspect(reply.body))
+              }
           }
           params.messages = messages;
         } catch (err) {
@@ -42,6 +46,7 @@ router.get('/:team_id/:channel_id',
             message: 'Could not fetch messages',
             debug: JSON.stringify(err)
           });
+          console.log("Error: " + err)
         }
       }
 

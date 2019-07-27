@@ -30,8 +30,20 @@ module.exports = {
     const client = getAuthenticatedClient(accessToken);
 
     try {
-      messages = await getMessagesInChannel(client, team_id, channel_id)
+      const messages = await getMessagesInChannel(client, team_id, channel_id)
       return messages;
+    }
+    catch (error) {
+      console.log("Error: " + util.inspect(error))
+    }
+  },
+
+  getReplies: async function (accessToken, team_id, channel_id, message_id) {
+    const client = getAuthenticatedClient(accessToken);
+
+    try {
+      const replies = await getMessageReplies(client, team_id, channel_id, message_id)
+      return replies;
     }
     catch (error) {
       console.log("Error: " + util.inspect(error))
@@ -73,10 +85,67 @@ async function getChannelsInTeam(client, team_id) {
 }
 
 async function getMessagesInChannel(client, team_id, channel_id) {
-  const messages = await client
+  let messages = [];
+
+  messagesData = await client
     .api(`/teams/${team_id}/channels/${channel_id}/messages`)
     .version('beta')
+    .top(1)
     .get();
 
+  messages = messages.concat(messagesData.value)
+
+  let nextLink = messagesData['@odata.nextLink'] ?
+    messagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
+    false;
+
+  while (nextLink) {
+    const nextMessagesData = await client
+      .api(nextLink)
+      .version('beta')
+      .top(1)
+      .get();
+
+    if (nextMessagesData.value.length > 0) {
+      messages = messages.concat(nextMessagesData.value)
+    }
+    nextLink = nextMessagesData['@odata.nextLink'] ?
+      nextMessagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
+      false;
+  }
+
   return messages;
+}
+
+async function getMessageReplies(client, team_id, channel_id, message_id) {
+  let replies = [];
+
+  const repliesData = await client
+    .api(`/teams/${team_id}/channels/${channel_id}/messages/${message_id}/replies`)
+    .version('beta')
+    .top(1)
+    .get();
+
+  replies = replies.concat(repliesData.value)
+
+  let nextLink = repliesData['@odata.nextLink'] ?
+    repliesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
+    false;
+
+  while (nextLink) {
+    const nextRepliesData = await client
+      .api(nextLink)
+      .version('beta')
+      .top(1)
+      .get();
+
+    if (nextRepliesData.value.length > 0) {
+      replies = replies.concat(nextRepliesData.value)
+    }
+    nextLink = nextRepliesData['@odata.nextLink'] ?
+      nextRepliesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
+      false;
+  }
+
+  return replies;
 }

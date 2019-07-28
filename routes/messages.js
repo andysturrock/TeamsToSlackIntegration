@@ -20,7 +20,7 @@ router.get('/:team_id/:channel_id',
       // Get the access token
       var accessToken;
       try {
-        accessToken = await tokens.getAccessToken(req);
+        accessToken = await tokens.getAccessTokenAsync(req);
       } catch (err) {
         req.flash('error_msg', {
           message: 'Could not get access token. Try signing out and signing in again.',
@@ -30,12 +30,12 @@ router.get('/:team_id/:channel_id',
 
       if (accessToken && accessToken.length > 0) {
         try {
-          var messages = await graph.getMessages(accessToken, team_id, channel_id);
+          var messages = await graph.getMessagesAsync(accessToken, team_id, channel_id);
 
           for(message of messages) {
               console.log("Message body" + util.inspect(message.body))
               console.log("Message from" + util.inspect(message.from.user))
-              const replies = await graph.getReplies(accessToken, team_id, channel_id, message.id);
+              const replies = await graph.getRepliesAsync(accessToken, team_id, channel_id, message.id);
               for(reply of replies) {
                 console.log("reply body" + util.inspect(reply.body))
               }

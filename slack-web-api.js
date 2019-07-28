@@ -13,7 +13,7 @@ function connectToSlackWebAPI() {
   webClient = new WebClient(token);
 }
 
-function web() {
+function webAsync() {
   if(!webClient) {
     connectToSlackWebAPI()
   }
@@ -22,14 +22,14 @@ function web() {
 
 module.exports = {
 
-  getBotConversations: async function (web) {
+  getBotConversationsAsync: async function (web) {
     let arse = await web.users.conversations()
     console.count("arse = " + util.inspect(arse))
   },
 
-  postMessage: async function (message, channel_id) {
+  postMessageAsync: async function (message, channel_id) {
     try {
-      const result = await web().chat.postMessage({ text: message, channel: channel_id });
+      const result = await webAsync().chat.postMessage({ text: message, channel: channel_id });
       console.log(`Successfully sent message ${result.ts} in conversation ${channel_id}: ` + util.inspect(result));
       return result.ts
     }

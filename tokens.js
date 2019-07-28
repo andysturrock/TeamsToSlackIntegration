@@ -1,5 +1,5 @@
 module.exports = {
-  getAccessToken: async function(req) {
+  getAccessTokenAsync: async function(req) {
     if (req.user) {
       // Get the stored token
       var storedToken = req.user.oauthToken;

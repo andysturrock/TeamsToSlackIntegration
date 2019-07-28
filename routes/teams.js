@@ -17,7 +17,7 @@ router.get('/',
       // Get the access token
       var accessToken;
       try {
-        accessToken = await tokens.getAccessToken(req);
+        accessToken = await tokens.getAccessTokenAsync(req);
       } catch (err) {
         req.flash('error_msg', {
           message: 'Could not get access token. Try signing out and signing in again.',
@@ -27,7 +27,7 @@ router.get('/',
 
       if (accessToken && accessToken.length > 0) {
         try {
-          var teamsAndChannels = await graph.getTeamsAndChannels(accessToken);
+          var teamsAndChannels = await graph.getTeamsAndChannelsAsync(accessToken);
           console.log("teamsAndChannels:" + util.inspect(teamsAndChannels))
           params.teamsAndChannels = teamsAndChannels;
         } catch (err) {

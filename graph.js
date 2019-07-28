@@ -2,6 +2,7 @@ var graph = require('@microsoft/microsoft-graph-client');
 var util = require('util')
 
 module.exports = {
+
   getUserDetails: async function (accessToken) {
     const client = getAuthenticatedClient(accessToken);
 
@@ -9,14 +10,14 @@ module.exports = {
     return user;
   },
 
-  getTeamsAndChannels: async function (accessToken) {
+  getTeamsAndChannelsAsync: async function (accessToken) {
     const client = getAuthenticatedClient(accessToken);
 
     try {
       var teamsAndChannels = []
-      const teams = await getMyTeams(client)
+      const teams = await getMyTeamsAsync(client)
       for (team of teams.value) {
-        channels = await getChannelsInTeam(client, team.id)
+        channels = await getChannelsInTeamAsync(client, team.id)
         teamsAndChannels.push({ id: `${team.id}`, displayName: `${team.displayName}`, channels: channels.value })
       }
       return teamsAndChannels;
@@ -26,25 +27,26 @@ module.exports = {
     }
   },
 
-  getMessagesAfter: async function (accessToken, teamId, channelId, date) {
-    const allMessages = await this.getMessages(accessToken, teamId, channelId)
+  getMessagesAfterAsync: async function (accessToken, teamId, channelId, date) {
+    const allMessages = await this.getMessagesAsync(accessToken, teamId, channelId)
     if(!date) {
       return allMessages
     }
     const messagesAfter = []
     allMessages.forEach(message => {
-      if(message.createdDateTime >= date) {
+      let messageCreatedDateTime = new Date(message.createdDateTime)
+      if(messageCreatedDateTime >= date) {
         messagesAfter.push(message)
       }
     });
     return messagesAfter
   },
 
-  getMessages: async function (accessToken, teamId, channelId) {
+  getMessagesAsync: async function (accessToken, teamId, channelId) {
     const client = getAuthenticatedClient(accessToken);
 
     try {
-      const messages = await getMessagesInChannel(client, teamId, channelId)
+      const messages = await getMessagesInChannelAsync(client, teamId, channelId)
       return messages;
     }
     catch (error) {
@@ -52,8 +54,8 @@ module.exports = {
     }
   },
 
-  getRepliesAfter: async function (accessToken, teamId, channelId, messageId, date) {
-    const allReplies = await this.getReplies(accessToken, teamId, channelId, messageId)
+  getRepliesAfterAsync: async function (accessToken, teamId, channelId, messageId, date) {
+    const allReplies = await this.getRepliesAsync(accessToken, teamId, channelId, messageId)
     if(!date) {
       return allReplies
     }
@@ -66,11 +68,11 @@ module.exports = {
     return repliesAfter
   },
 
-  getReplies: async function (accessToken, teamId, channelId, messageId) {
+  getRepliesAsync: async function (accessToken, teamId, channelId, messageId) {
     const client = getAuthenticatedClient(accessToken);
 
     try {
-      const replies = await getMessageReplies(client, teamId, channelId, messageId)
+      const replies = await getMessageRepliesAsync(client, teamId, channelId, messageId)
       return replies;
     }
     catch (error) {
@@ -79,20 +81,7 @@ module.exports = {
   }
 };
 
-function getAuthenticatedClient(accessToken) {
-  // Initialize Graph client
-  const client = graph.Client.init({
-    // Use the provided access token to authenticate
-    // requests
-    authProvider: (done) => {
-      done(null, accessToken);
-    }
-  });
-
-  return client;
-}
-
-async function getMyTeams(client) {
+async function getMyTeamsAsync(client) {
   const teams = await client
     .api('/me/joinedTeams')
     .version('beta')
@@ -102,7 +91,7 @@ async function getMyTeams(client) {
   return teams;
 }
 
-async function getChannelsInTeam(client, teamId) {
+async function getChannelsInTeamAsync(client, teamId) {
   const channels = await client
     .api(`/teams/${teamId}/channels`)
     .version('beta')
@@ -112,7 +101,7 @@ async function getChannelsInTeam(client, teamId) {
   return channels;
 }
 
-async function getMessagesInChannel(client, teamId, channelId) {
+async function getMessagesInChannelAsync(client, teamId, channelId) {
   let messages = [];
 
   messagesData = await client
@@ -145,7 +134,7 @@ async function getMessagesInChannel(client, teamId, channelId) {
   return messages;
 }
 
-async function getMessageReplies(client, teamId, channelId, messageId) {
+async function getMessageRepliesAsync(client, teamId, channelId, messageId) {
   let replies = [];
 
   const repliesData = await client
@@ -176,4 +165,17 @@ async function getMessageReplies(client, teamId, channelId, messageId) {
   }
 
   return replies;
+}
+
+function getAuthenticatedClient(accessToken) {
+  // Initialize Graph client
+  const client = graph.Client.init({
+    // Use the provided access token to authenticate
+    // requests
+    authProvider: (done) => {
+      done(null, accessToken);
+    }
+  });
+
+  return client;
 }

@@ -7,21 +7,23 @@ var slackWeb = require('./slack-web-api');
 
 module.exports = {
   pollTeamsForMessages: async function (accessToken) {
-    console.log(`Polling Teams for messages with accessToken ${accessToken} at ...` + new Date())
+    console.log(`Polling Teams for messages at ...` + new Date())
 
-    slackWeb.postMessage("Polling teams...", "C7F9N62KS")
-
-    const teamsChannels = channelMaps.getTeamsChannels()
+    const teamsChannels = await channelMaps.getTeamsChannelsAsync()
     for (let teamsChannel of teamsChannels) {
-      const slackChannelId = channelMaps.getSlackChannel(teamsChannel.teamId, teamsChannel.teamsChannelId)
+      const slackChannelId = await channelMaps.getSlackChannelAsync(teamsChannel.teamId, teamsChannel.teamsChannelId)
+      console.log("slackChannelId: " + util.inspect(slackChannelId))
       if (slackChannelId) {
-        // First get the messages from this channel since last time we checked...
-        const lastPolledTime = channelMaps.getLastPolledTime(teamsChannel.teamId, teamsChannel.teamsChannelId)
+        // Check last time we polled this channel
+        const lastPolledTime = await channelMaps.getLastPolledTimeAsync(teamsChannel.teamId, teamsChannel.teamsChannelId)
+        console.log("lastPolledTime: " + lastPolledTime)
+        // If we haven't polled it before, then post a warning and start from now
         if (!lastPolledTime) {
-          slackWeb.postMessage("Can't find last time I checked Teams for messages - there may be missing messages", slackChannelId)
+          slackWeb.postMessageAsync("Can't find last time I checked Teams for messages - there may be missing messages", slackChannelId)
+          await channelMaps.setLastPolledTimeAsync(teamsChannel.teamId, teamsChannel.teamsChannelId, new Date())
         } else {
-
-          const messages = await graph.getMessagesAfter(accessToken, teamsChannel.teamId, teamsChannel.teamsChannelId, lastPolledTime);
+          // Get the messages from this channel since last time we checked...
+          const messages = await graph.getMessagesAfterAsync(accessToken, teamsChannel.teamId, teamsChannel.teamsChannelId, lastPolledTime);
 
           // And post them to Slack
           for (let message of messages) {
@@ -29,22 +31,23 @@ module.exports = {
             console.log("Message body: " + util.inspect(message.body))
             console.log("Message from: " + util.inspect(message.from.user))
             const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
-            const slackMessageId = slackWeb.postMessage(slackMessage, slackChannelId)
-            channelMaps.setSlackMessageId(slackMessageId, teamsChannel.teamId, teamsChannel.teamsChannelId, message.id)
+            const slackMessageId = slackWeb.postMessageAsync(slackMessage, slackChannelId)
+            await channelMaps.setSlackMessageIdAsync(slackMessageId, teamsChannel.teamId, teamsChannel.teamsChannelId, message.id)
 
             // Now deal with any replies
-            const replies = await graph.getRepliesAfter(accessToken, teamsChannel.teamId, teamsChannel.teamsChannelId, message.id, lastPolledTime);
+            const replies = await graph.getRepliesAfterAsync(accessToken, teamsChannel.teamId, teamsChannel.teamsChannelId, message.id, lastPolledTime);
             for (let reply of replies) {
               console.log("reply body: " + util.inspect(reply.body))
               console.log("reply to id:" + util.inspect(reply.replyToId))
               // Find the Slack message id for the original message
-              const slackMessageId = channelMaps.getSlackMessageId(teamsChannel.teamId, teamsChannel.teamsChannelId, reply.replyToId)
+              const slackMessageId = channelMaps.getSlackMessageIdAsync(teamsChannel.teamId, teamsChannel.teamsChannelId, reply.replyToId)
               // Now post the reply to the slack message thread
             }
-            channelMaps.setLastPolledTime(teamsChannel.teamId, teamsChannel.teamsChannelId, new Date())
           }
+          await channelMaps.setLastPolledTimeAsync(teamsChannel.teamId, teamsChannel.teamsChannelId, new Date())
         }
       } else {
+        // Shouldn't happen
         console.log(`Error - cannot find mapped Slack channel for ${teamsChannel.teamId}/${teamsChannel.teamsChannelId}`)
       }
     }

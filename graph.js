@@ -26,11 +26,25 @@ module.exports = {
     }
   },
 
-  getMessages: async function (accessToken, team_id, channel_id) {
+  getMessagesAfter: async function (accessToken, teamId, channelId, date) {
+    const allMessages = await this.getMessages(accessToken, teamId, channelId)
+    if(!date) {
+      return allMessages
+    }
+    const messagesAfter = []
+    allMessages.forEach(message => {
+      if(message.createdDateTime >= date) {
+        messagesAfter.push(message)
+      }
+    });
+    return messagesAfter
+  },
+
+  getMessages: async function (accessToken, teamId, channelId) {
     const client = getAuthenticatedClient(accessToken);
 
     try {
-      const messages = await getMessagesInChannel(client, team_id, channel_id)
+      const messages = await getMessagesInChannel(client, teamId, channelId)
       return messages;
     }
     catch (error) {
@@ -38,11 +52,25 @@ module.exports = {
     }
   },
 
-  getReplies: async function (accessToken, team_id, channel_id, message_id) {
+  getRepliesAfter: async function (accessToken, teamId, channelId, messageId, date) {
+    const allReplies = await this.getReplies(accessToken, teamId, channelId, messageId)
+    if(!date) {
+      return allReplies
+    }
+    const repliesAfter = []
+    allReplies.forEach(reply => {
+      if(reply.createdDateTime >= date) {
+        repliesAfter.push(reply)
+      }
+    });
+    return repliesAfter
+  },
+
+  getReplies: async function (accessToken, teamId, channelId, messageId) {
     const client = getAuthenticatedClient(accessToken);
 
     try {
-      const replies = await getMessageReplies(client, team_id, channel_id, message_id)
+      const replies = await getMessageReplies(client, teamId, channelId, messageId)
       return replies;
     }
     catch (error) {
@@ -74,9 +102,9 @@ async function getMyTeams(client) {
   return teams;
 }
 
-async function getChannelsInTeam(client, team_id) {
+async function getChannelsInTeam(client, teamId) {
   const channels = await client
-    .api(`/teams/${team_id}/channels`)
+    .api(`/teams/${teamId}/channels`)
     .version('beta')
     .select('id,displayname')
     .get();
@@ -84,11 +112,11 @@ async function getChannelsInTeam(client, team_id) {
   return channels;
 }
 
-async function getMessagesInChannel(client, team_id, channel_id) {
+async function getMessagesInChannel(client, teamId, channelId) {
   let messages = [];
 
   messagesData = await client
-    .api(`/teams/${team_id}/channels/${channel_id}/messages`)
+    .api(`/teams/${teamId}/channels/${channelId}/messages`)
     .version('beta')
     .top(1)
     .get();
@@ -117,11 +145,11 @@ async function getMessagesInChannel(client, team_id, channel_id) {
   return messages;
 }
 
-async function getMessageReplies(client, team_id, channel_id, message_id) {
+async function getMessageReplies(client, teamId, channelId, messageId) {
   let replies = [];
 
   const repliesData = await client
-    .api(`/teams/${team_id}/channels/${channel_id}/messages/${message_id}/replies`)
+    .api(`/teams/${teamId}/channels/${channelId}/messages/${messageId}/replies`)
     .version('beta')
     .top(1)
     .get();

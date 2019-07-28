@@ -31,7 +31,7 @@ module.exports = {
             console.log("Message body: " + util.inspect(message.body))
             console.log("Message from: " + util.inspect(message.from.user))
             const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
-            const slackMessageId = slackWeb.postMessageAsync(slackMessage, slackChannelId)
+            const slackMessageId = await slackWeb.postMessageAsync(slackMessage, slackChannelId)
             await channelMaps.setSlackMessageIdAsync(slackMessageId, teamsChannel.teamId, teamsChannel.teamsChannelId, message.id)
 
             // Now deal with any replies

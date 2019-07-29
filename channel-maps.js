@@ -8,7 +8,7 @@ var util = require('util')
 // Map of Teams {teamId, channelId, messageId} -> Slack messageId 
 var redis = require("redis")
 var client = redis.createClient();
-const {promisify} = require('util');
+const { promisify } = require('util');
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);
 
@@ -73,14 +73,16 @@ module.exports = {
     },
 
     setLastMessageTimeAsync: async function (teamId, teamsChannelId, date) {
-        await setAsync("LastMessageTime/" + createTeamsChannelKey(teamId, teamsChannelId), date)
+        await setAsync("LastMessageTime/" + createTeamsChannelKey(teamId, teamsChannelId), JSON.stringify(date))
     },
 
     getLastMessageTimeAsync: async function (teamId, teamsChannelId) {
         const date = await getAsync("LastMessageTime/" + createTeamsChannelKey(teamId, teamsChannelId))
         // null gets turned into 1st Jan 1970 by the Date constructor.  We want to actually return null
         // if we don't have a date for this Teams channel.
-        return date ? new Date(date) : date
+        // The stringify and parse stuff is to stop the milliseconds being truncated
+        // which is what happens if you just set/get the object
+        return date ? new Date(JSON.parse(date)) : date
     },
 
     getSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId) {

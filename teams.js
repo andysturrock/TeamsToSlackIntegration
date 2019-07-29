@@ -12,7 +12,6 @@ module.exports = {
     // If we end up with multiple invocations of this callback, we'll double-post
     // So keep a track and just return if an existing invocation is in flight.
     if (alreadyPolling) {
-      console.log("Already polling, so exiting...")
       return
     }
 
@@ -26,7 +25,6 @@ module.exports = {
         const slackChannelId = await channelMaps.getSlackChannelAsync(teamsChannel.teamId, teamsChannel.teamsChannelId)
         console.log("slackChannelId: " + util.inspect(slackChannelId))
         if (slackChannelId) {
-          console.log(`Looking for last time we got a message from ${teamsChannel.teamId}/${teamsChannel.teamsChannelId}`)
           // Check the time of the last message we saw from this channel
           let lastMessageTime = await channelMaps.getLastMessageTimeAsync(teamsChannel.teamId, teamsChannel.teamsChannelId)
           // If we haven't seen any before, then post a warning and start from now
@@ -53,13 +51,13 @@ module.exports = {
 
               // Keep track of the latest message we've seen
               console.log(`Comparing ${messageCreatedDateTime} with ${lastMessageTime}`)
-              if(messageCreatedDateTime >= lastMessageTime) {
+              console.log("Which is " +  util.inspect(messageCreatedDateTime) + " and " + util.inspect(lastMessageTime))
+              console.log("or alternatively " +  messageCreatedDateTime.getTime() + " and " + lastMessageTime.getTime())
+              
+              if(messageCreatedDateTime > lastMessageTime) {
                 console.log(`${messageCreatedDateTime} >= ${lastMessageTime}`)
                 lastMessageTime = messageCreatedDateTime
                 console.log(`So now lastMessageTime = ${lastMessageTime}`)
-              } else {
-                console.log(`${messageCreatedDateTime} < ${lastMessageTime} ???  WTF ???`)
-                console.log(`lastMessageTime still = ${lastMessageTime}`)
               }
 
               // Now deal with any replies

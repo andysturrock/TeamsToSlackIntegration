@@ -35,7 +35,7 @@ module.exports = {
     const messagesAfter = []
     allMessages.forEach(message => {
       let messageCreatedDateTime = new Date(message.createdDateTime)
-      if(messageCreatedDateTime >= date) {
+      if(messageCreatedDateTime > date) {
         // Messages seem to be returned fairly reliably in last->first order
         // So put them in our array at the end so the array is sorted
         // first -> last when we return it.

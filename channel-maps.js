@@ -72,12 +72,15 @@ module.exports = {
         })
     },
 
-    setLastPolledTimeAsync: async function (teamId, teamsChannelId, date) {
-        await setAsync("LastPolledTime/" + createTeamsChannelKey(teamId, teamsChannelId), date)
+    setLastMessageTimeAsync: async function (teamId, teamsChannelId, date) {
+        await setAsync("LastMessageTime/" + createTeamsChannelKey(teamId, teamsChannelId), date)
     },
 
-    getLastPolledTimeAsync: async function (teamId, teamsChannelId) {
-        return new Date(await getAsync("LastPolledTime/" + createTeamsChannelKey(teamId, teamsChannelId)))
+    getLastMessageTimeAsync: async function (teamId, teamsChannelId) {
+        const date = await getAsync("LastMessageTime/" + createTeamsChannelKey(teamId, teamsChannelId))
+        // null gets turned into 1st Jan 1970 by the Date constructor.  We want to actually return null
+        // if we don't have a date for this Teams channel.
+        return date ? new Date(date) : date
     },
 
     getSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId) {

@@ -11,6 +11,14 @@ var OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 var graph = require('./graph');
 var util = require('util')
 
+// TODO probably move this somewhere else
+var redis = require("redis")
+var client = redis.createClient();
+const {promisify} = require('util');
+const getAsync = promisify(client.get).bind(client);
+const setAsync = promisify(client.set).bind(client);
+// End TODO
+
 // Configure simple-oauth2
 const oauth2 = require('simple-oauth2').create({
   client: {
@@ -26,21 +34,19 @@ const oauth2 = require('simple-oauth2').create({
 
 // Configure passport
 
-// In-memory storage of logged-in users
-// For demo purposes only, production apps should store
-// this in a reliable storage
-var users = {};
-
 // Passport calls serializeUser and deserializeUser to
 // manage users
-passport.serializeUser(function (user, done) {
+passport.serializeUser(async function (user, done) {
   // Use the OID property of the user as a key
-  users[user.profile.oid] = user;
+  console.log(`Setting users/${user.profile.oid} => ` + JSON.stringify(user))
+  await setAsync(`passport.serializeUser: users/${user.profile.oid}`, JSON.stringify(user))
   done(null, user.profile.oid);
 });
 
-passport.deserializeUser(function (id, done) {
-  done(null, users[id]);
+passport.deserializeUser(async function (id, done) {
+  user = JSON.parse(await getAsync(`users/${id}`))
+  console.log(`passport.deserializeUser returning users[${id}] = ` + util.inspect(user))
+  done(null, user)
 });
 
 // Callback function called once the sign-in is complete
@@ -66,15 +72,16 @@ async function signInComplete(iss, sub, profile, accessToken, refreshToken, para
   let oauthToken = oauth2.accessToken.create(params);
 
   // Save the profile and tokens in user storage
-  users[profile.oid] = { profile, oauthToken };
-
+  const profileAndToken = { profile, oauthToken }
+  console.log(`signInComplete: Setting users[${profile.oid}] to ` + JSON.stringify(profileAndToken))
+  await setAsync(`users/${profile.oid}`, JSON.stringify(profileAndToken))
 
   var teams = require('./teams');
   // Every 5 seconds, poll Teams and get the messages
   setInterval(teams.pollTeamsForMessages.bind(this, accessToken), 5000);
 
-
-  return done(null, users[profile.oid]);
+  console.log(`signInComplete: Returning profileAndToken as ` + JSON.stringify(profileAndToken))
+  return done(null, profileAndToken);
 }
 
 // Configure OIDC strategy
@@ -182,13 +189,5 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-
-// var slackWeb = require('./slack-web-api');
-
-// web = slackWeb.connectToSlackWebAPI();
-// slackWeb.getBotConversation(web);
-
-// slackWeb.postMessage(web, "Hello world!", "C7F9N62KS")
 
 module.exports = app;

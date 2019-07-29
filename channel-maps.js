@@ -73,7 +73,6 @@ module.exports = {
     },
 
     setLastPolledTimeAsync: async function (teamId, teamsChannelId, date) {
-        console.log("Setting last polled time to " + date)
         await setAsync("LastPolledTime/" + createTeamsChannelKey(teamId, teamsChannelId), date)
     },
 

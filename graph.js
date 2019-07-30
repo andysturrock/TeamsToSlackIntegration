@@ -33,6 +33,9 @@ module.exports = {
       return allMessages
     }
     const messagesAfter = []
+    if(!allMessages) {
+      return messagesAfter
+    }
     allMessages.forEach(message => {
       let messageCreatedDateTime = new Date(message.createdDateTime)
       if(messageCreatedDateTime > date) {

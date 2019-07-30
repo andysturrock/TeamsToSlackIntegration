@@ -37,7 +37,7 @@ module.exports = {
             // Get the messages from this channel since the last one we saw...
             const messages = await graph.getMessagesAfterAsync(accessToken, teamsChannel.teamId, teamsChannel.teamsChannelId, lastMessageTime);
 
-            console.log("Found: " + messages.length + " so processing...")
+            console.log("Found: " + messages.length + " messages so processing...")
             // And post them to Slack
             for (let message of messages) {
               const messageCreatedDateTime = new Date(message.createdDateTime)
@@ -47,28 +47,31 @@ module.exports = {
               console.log("Message from: " + util.inspect(message.from.user))
               const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
               const slackMessageId = await slackWeb.postMessageAsync(slackMessage, slackChannelId)
+              console.log(`slackMessageId = ${slackMessageId}`)
               await channelMaps.setSlackMessageIdAsync(slackMessageId, teamsChannel.teamId, teamsChannel.teamsChannelId, message.id)
 
-              // Keep track of the latest message we've seen
-              console.log(`Comparing ${messageCreatedDateTime} with ${lastMessageTime}`)
-              console.log("Which is " +  util.inspect(messageCreatedDateTime) + " and " + util.inspect(lastMessageTime))
-              console.log("or alternatively " +  messageCreatedDateTime.getTime() + " and " + lastMessageTime.getTime())
-              
-              if(messageCreatedDateTime > lastMessageTime) {
-                console.log(`${messageCreatedDateTime} >= ${lastMessageTime}`)
+              // Keep track of the latest message we've seen             
+              if (messageCreatedDateTime > lastMessageTime) {
                 lastMessageTime = messageCreatedDateTime
-                console.log(`So now lastMessageTime = ${lastMessageTime}`)
               }
 
               // Now deal with any replies
               const replies = await graph.getRepliesAfterAsync(accessToken, teamsChannel.teamId, teamsChannel.teamsChannelId, message.id, lastMessageTime);
+              console.log("Found: " + replies.length + " replies so processing...")
               for (let reply of replies) {
                 console.log("reply body: " + util.inspect(reply.body))
                 console.log("reply to id:" + util.inspect(reply.replyToId))
+                console.log("reply created time: " + reply.createdDateTime)
+                console.log("reply from: " + util.inspect(message.from.user))
                 // Find the Slack message id for the original message
-                const slackMessageId = channelMaps.getSlackMessageIdAsync(teamsChannel.teamId, teamsChannel.teamsChannelId, reply.replyToId)
+                const slackMessageId = await channelMaps.getSlackMessageIdAsync(teamsChannel.teamId, teamsChannel.teamsChannelId, reply.replyToId)
+                console.log(`slackMessageId for reply = ${slackMessageId}`)
+                const slackReply = `From Teams (${reply.from.user.displayName}): ${reply.body.content}`
                 // Now post the reply to the slack message thread
-                console.log("TODO - deal with replies!!!")
+                // Don't care about the Slack Message ID of this post as we just post back to the 
+                // parent each time.  In fact the API reference https://api.slack.com/methods/chat.postMessage
+                // explicitly says "Avoid using a reply's ts value; use its parent instead."
+                await slackWeb.postMessageAsync(slackReply, slackChannelId, slackMessageId)
               }
             }
             console.log("Setting last message time to " + lastMessageTime)
@@ -84,7 +87,7 @@ module.exports = {
     } finally {
       alreadyPolling = false
     }
-  } 
+  }
 };
 
 

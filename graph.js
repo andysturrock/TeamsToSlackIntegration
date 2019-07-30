@@ -23,7 +23,7 @@ module.exports = {
       return teamsAndChannels;
     }
     catch (error) {
-      console.log("Error: " + util.inspect(error))
+      console.log("Error getting Teams and Channels: " + error.stack)
     }
   },
 
@@ -53,7 +53,7 @@ module.exports = {
       return messages;
     }
     catch (error) {
-      console.log("Error: " + util.inspect(error))
+      console.log("Error getting Messages: " + error.stack)
     }
   },
 
@@ -79,7 +79,7 @@ module.exports = {
       return replies;
     }
     catch (error) {
-      console.log("Error: " + util.inspect(error))
+      console.log("Error getting replies: " + error.stack)
     }
   }
 };

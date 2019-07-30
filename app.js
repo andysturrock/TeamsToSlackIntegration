@@ -38,14 +38,12 @@ const oauth2 = require('simple-oauth2').create({
 // manage users
 passport.serializeUser(async function (user, done) {
   // Use the OID property of the user as a key
-  console.log(`Setting users/${user.profile.oid} => ` + JSON.stringify(user))
   await setAsync(`passport.serializeUser: users/${user.profile.oid}`, JSON.stringify(user))
   done(null, user.profile.oid);
 });
 
 passport.deserializeUser(async function (id, done) {
   user = JSON.parse(await getAsync(`users/${id}`))
-  console.log(`passport.deserializeUser returning users[${id}] = ` + util.inspect(user))
   done(null, user)
 });
 
@@ -73,14 +71,12 @@ async function signInComplete(iss, sub, profile, accessToken, refreshToken, para
 
   // Save the profile and tokens in user storage
   const profileAndToken = { profile, oauthToken }
-  console.log(`signInComplete: Setting users[${profile.oid}] to ` + JSON.stringify(profileAndToken))
   await setAsync(`users/${profile.oid}`, JSON.stringify(profileAndToken))
 
   var teams = require('./teams');
   // Every 5 seconds, poll Teams and get the messages
   setInterval(teams.pollTeamsForMessages.bind(this, accessToken), 5000);
 
-  console.log(`signInComplete: Returning profileAndToken as ` + JSON.stringify(profileAndToken))
   return done(null, profileAndToken);
 }
 

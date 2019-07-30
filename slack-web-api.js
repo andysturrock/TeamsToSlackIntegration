@@ -26,10 +26,15 @@ module.exports = {
     return await web().users.conversations()
   },
 
-  postMessageAsync: async function (message, channel_id) {
+  postMessageAsync: async function (message, channelId, slackMessageId) {
     try {
-      const result = await web().chat.postMessage({ text: message, channel: channel_id });
-      return result.ts
+      if(slackMessageId) {
+        const result = await web().chat.postMessage({ text: message, channel: channelId, thread_ts: slackMessageId });
+        return result.ts
+      } else {
+        const result = await web().chat.postMessage({ text: message, channel: channelId });
+        return result.ts
+      }
     }
     catch (error) {
       console.log("Error posting to Slack: " + error.stack)

@@ -27,7 +27,7 @@ function connectToSlackRTM() {
       console.log('Message sent: ', res.ts);
     }
     catch (error) {
-      console.log("Error: " + util.inspect(error))
+      console.log("Error in Slack RTM API: " + error.stack)
     }
   });
 

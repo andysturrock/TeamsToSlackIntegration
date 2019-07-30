@@ -24,7 +24,7 @@ router.get('/:team_id/:channel_id',
       } catch (err) {
         req.flash('error_msg', {
           message: 'Could not get access token. Try signing out and signing in again.',
-          debug: JSON.stringify(err)
+          debug: JSON.stringify(err.stack)
         });
       }
 
@@ -41,12 +41,11 @@ router.get('/:team_id/:channel_id',
               }
           }
           params.messages = messages;
-        } catch (err) {
+        } catch (error) {
           req.flash('error_msg', {
             message: 'Could not fetch messages',
-            debug: JSON.stringify(err)
+            debug: JSON.stringify(err.stack)
           });
-          console.log("Error: " + err)
         }
       }
 

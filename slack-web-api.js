@@ -32,7 +32,7 @@ module.exports = {
       return result.ts
     }
     catch (error) {
-      console.log("Error: " + util.inspect(error))
+      console.log("Error posting to Slack: " + error.stack)
     }
   }
 };

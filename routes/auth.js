@@ -5,6 +5,7 @@ var router = express.Router();
 /* GET auth callback. */
 router.get('/signin',
   function (req, res, next) {
+    console.log("Auth Here 1")
     passport.authenticate('azuread-openidconnect',
       {
         response: res,
@@ -15,6 +16,7 @@ router.get('/signin',
     )(req, res, next);
   },
   function (req, res) {
+    console.log("Auth Here 2")
     res.redirect('/');
   }
 );

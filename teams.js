@@ -80,7 +80,7 @@ module.exports = {
         }
       }
     } catch (error) {
-      console.log(`Error polling for Teams messages: ${error}`)
+      console.log(`Error polling for Teams messages: ${error}\n${error.stack}`)
     } finally {
       alreadyPolling = false
     }

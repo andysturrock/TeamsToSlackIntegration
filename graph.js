@@ -1,6 +1,8 @@
 var graph = require('@microsoft/microsoft-graph-client');
 var util = require('util')
 
+const PAGE_SIZE = 100
+
 module.exports = {
 
   getUserDetails: async function (accessToken) {
@@ -66,9 +68,13 @@ module.exports = {
       return allReplies
     }
     const repliesAfter = []
+    if(!repliesAfter) {
+      return repliesAfter
+    }
     allReplies.forEach(reply => {
-      if(reply.createdDateTime >= date) {
-        repliesAfter.push(reply)
+      let replyCreatedDateTime = new Date(reply.createdDateTime)
+      if(replyCreatedDateTime > date) {
+        repliesAfter.unshift(reply)
       }
     });
     return repliesAfter
@@ -113,7 +119,7 @@ async function getMessagesInChannelAsync(client, teamId, channelId) {
   messagesData = await client
     .api(`/teams/${teamId}/channels/${channelId}/messages`)
     .version('beta')
-    .top(1)
+    .top(PAGE_SIZE)
     .get();
 
   messages = messages.concat(messagesData.value)
@@ -126,7 +132,7 @@ async function getMessagesInChannelAsync(client, teamId, channelId) {
     const nextMessagesData = await client
       .api(nextLink)
       .version('beta')
-      .top(1)
+      .top(PAGE_SIZE)
       .get();
 
     if (nextMessagesData.value.length > 0) {
@@ -146,7 +152,7 @@ async function getMessageRepliesAsync(client, teamId, channelId, messageId) {
   const repliesData = await client
     .api(`/teams/${teamId}/channels/${channelId}/messages/${messageId}/replies`)
     .version('beta')
-    .top(1)
+    .top(PAGE_SIZE)
     .get();
 
   replies = replies.concat(repliesData.value)
@@ -159,7 +165,7 @@ async function getMessageRepliesAsync(client, teamId, channelId, messageId) {
     const nextRepliesData = await client
       .api(nextLink)
       .version('beta')
-      .top(1)
+      .top(PAGE_SIZE)
       .get();
 
     if (nextRepliesData.value.length > 0) {

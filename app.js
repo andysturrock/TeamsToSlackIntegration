@@ -75,7 +75,7 @@ async function signInComplete(iss, sub, profile, accessToken, refreshToken, para
 
   var teams = require('./teams');
   // Every 5 seconds, poll Teams and get the messages
-  setInterval(teams.pollTeamsForMessages.bind(this, accessToken), 5000);
+  setInterval(teams.pollTeamsForMessagesAsync.bind(this, accessToken), 5000);
 
   return done(null, profileAndToken);
 }

@@ -52,7 +52,6 @@ module.exports = {
 
   getMessagesAsync: async function (accessToken, teamId, channelId) {
     const client = getAuthenticatedClient(accessToken);
-
     try {
       const messages = await getMessagesInChannelAsync(client, teamId, channelId)
       return messages;

@@ -11,6 +11,8 @@ var client = redis.createClient();
 const { promisify } = require('util');
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);
+const saddAsync = promisify(client.sadd).bind(client);
+const smembersAsync = promisify(client.smembers).bind(client);
 
 // TODO - remove these
 const slackTest = "fb5cb1df-ad0a-4ae4-b979-21db4a48f68c"
@@ -91,5 +93,24 @@ module.exports = {
 
     setSlackMessageIdAsync: async function (slackMessageId, teamId, teamsChannelId, teamsMessageId) {
         await setAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId), slackMessageId)
+    },
+
+    setLastReplyTimeAsync: async function (date, teamId, teamsChannelId, teamsMessageId) {
+        await setAsync("TeamsMessageId2LastReplyTime/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId), JSON.stringify(date))
+    },
+
+    getLastReplyTimeAsync: async function (teamId, teamsChannelId, teamsMessageId) {
+        const date = await getAsync("TeamsMessageId2LastReplyTime/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId))
+        return date ? new Date(JSON.parse(date)) : date
+    },
+
+    getAllMessageIdsAsync: async function (teamId, teamsChannelId) {
+        const allMessageIds = await smembersAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId))
+        return allMessageIds ? allMessageIds : []
+    },
+
+    addMessageIdAsync: async function (teamId, teamsChannelId, messageId) {
+        console.log("sadding " + "TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId) + `, ${messageId}`)
+        await saddAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId), messageId)
     }
 };

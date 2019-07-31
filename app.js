@@ -5,6 +5,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
+var RedisStore = require('connect-redis')(session);
 var flash = require('connect-flash');
 var passport = require('passport');
 var OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
@@ -14,7 +15,7 @@ var util = require('util')
 // TODO probably move this somewhere else
 var redis = require("redis")
 var client = redis.createClient();
-const {promisify} = require('util');
+const { promisify } = require('util');
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);
 // End TODO
@@ -37,12 +38,16 @@ const oauth2 = require('simple-oauth2').create({
 // Passport calls serializeUser and deserializeUser to
 // manage users
 passport.serializeUser(async function (user, done) {
+  console.trace("serializeUser")
+  console.log("user = " + util.inspect(user))
   // Use the OID property of the user as a key
-  await setAsync(`passport.serializeUser: users/${user.profile.oid}`, JSON.stringify(user))
+  await setAsync(`users/${user.profile.oid}`, JSON.stringify(user))
   done(null, user.profile.oid);
 });
 
 passport.deserializeUser(async function (id, done) {
+  console.trace("serializeUser")
+  console.log("user = " + util.inspect(id))
   user = JSON.parse(await getAsync(`users/${id}`))
   done(null, user)
 });
@@ -106,13 +111,11 @@ var messagesRouter = require('./routes/messages');
 var app = express();
 
 // Session middleware
-// NOTE: Uses default in-memory session store, which is not
-// suitable for production
 app.use(session({
-  secret: 'your_secret_value_here',
+  store: new RedisStore(),
+  secret: 'keyboard cat',
   resave: false,
-  saveUninitialized: false,
-  unset: 'destroy'
+  saveUninitialized: false
 }));
 
 // Flash middleware
@@ -185,5 +188,9 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+// var teams = require('./teams');
+// // Every 5 seconds, poll Teams and get the messages
+// setInterval(teams.pollTeamsForMessagesAsync.bind(this, accessToken), 5000);
 
 module.exports = app;

@@ -91,11 +91,11 @@ module.exports = {
         return await getAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId))
     },
 
-    setSlackMessageIdAsync: async function (slackMessageId, teamId, teamsChannelId, teamsMessageId) {
+    setSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId, slackMessageId) {
         await setAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId), slackMessageId)
     },
 
-    setLastReplyTimeAsync: async function (date, teamId, teamsChannelId, teamsMessageId) {
+    setLastReplyTimeAsync: async function (teamId, teamsChannelId, teamsMessageId, date) {
         await setAsync("TeamsMessageId2LastReplyTime/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId), JSON.stringify(date))
     },
 
@@ -105,6 +105,7 @@ module.exports = {
     },
 
     getAllMessageIdsAsync: async function (teamId, teamsChannelId) {
+        console.log("getAllMessageIdsAsync() getting members of " + "(TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId))
         const allMessageIds = await smembersAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId))
         return allMessageIds ? allMessageIds : []
     },

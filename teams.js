@@ -47,7 +47,7 @@ module.exports = {
               // Put this in the set for use in reply processing later.
               await channelMaps.addMessageIdAsync(teamId, teamsChannelId, message.id)
               // Set the last reply time to the message created date.  We'll check for replies from that time.
-              await channelMaps.setLastReplyTimeAsync(messageCreatedDateTime, teamId, teamsChannelId, message.id)
+              await channelMaps.setLastReplyTimeAsync(teamId, teamsChannelId, message.id, messageCreatedDateTime)
 
               console.log("message id: " + util.inspect(message.id))
               console.log("Message body: " + util.inspect(message.body))
@@ -56,7 +56,7 @@ module.exports = {
               const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
               const slackMessageId = await slackWeb.postMessageAsync(slackMessage, slackChannelId)
               console.log(`slackMessageId = ${slackMessageId}`)
-              await channelMaps.setSlackMessageIdAsync(slackMessageId, teamId, teamsChannelId, message.id)
+              await channelMaps.setSlackMessageIdAsync(teamId, teamsChannelId, message.id, slackMessageId)
 
               // Keep track of the latest message we've seen             
               if (messageCreatedDateTime > lastMessageTime) {
@@ -84,8 +84,9 @@ module.exports = {
 };
 
 async function pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, slackChannelId) {
-  console.log("Polling Teams for messages...")
+  console.log("Polling Teams for replies...")
   const allMessageIds = await channelMaps.getAllMessageIdsAsync(teamId, teamsChannelId)
+  console.log("allMessageIds = " + util.inspect(allMessageIds))
   for (let messageId of allMessageIds) {
     console.log("Checking message " + messageId)
     let lastReplyTime = await channelMaps.getLastReplyTimeAsync(teamId, teamsChannelId, messageId)

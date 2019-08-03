@@ -1,3 +1,4 @@
+'use strict'
 var graph = require('@microsoft/microsoft-graph-client');
 var util = require('util')
 
@@ -31,16 +32,16 @@ module.exports = {
 
   getMessagesAfterAsync: async function (accessToken, teamId, channelId, date) {
     const allMessages = await this.getMessagesAsync(accessToken, teamId, channelId)
-    if(!date) {
+    if (!date) {
       return allMessages
     }
     const messagesAfter = []
-    if(!allMessages) {
+    if (!allMessages) {
       return messagesAfter
     }
     allMessages.forEach(message => {
       let messageCreatedDateTime = new Date(message.createdDateTime)
-      if(messageCreatedDateTime > date) {
+      if (messageCreatedDateTime > date) {
         // Messages seem to be returned fairly reliably in last->first order
         // So put them in our array at the end so the array is sorted
         // first -> last when we return it.
@@ -63,16 +64,16 @@ module.exports = {
 
   getRepliesAfterAsync: async function (accessToken, teamId, channelId, messageId, date) {
     const allReplies = await this.getRepliesAsync(accessToken, teamId, channelId, messageId)
-    if(!date) {
+    if (!date) {
       return allReplies
     }
     const repliesAfter = []
-    if(!repliesAfter) {
+    if (!repliesAfter) {
       return repliesAfter
     }
     allReplies.forEach(reply => {
       let replyCreatedDateTime = new Date(reply.createdDateTime)
-      if(replyCreatedDateTime > date) {
+      if (replyCreatedDateTime > date) {
         repliesAfter.unshift(reply)
       }
     });
@@ -115,31 +116,36 @@ async function getChannelsInTeamAsync(client, teamId) {
 async function getMessagesInChannelAsync(client, teamId, channelId) {
   let messages = [];
 
-  messagesData = await client
-    .api(`/teams/${teamId}/channels/${channelId}/messages`)
-    .version('beta')
-    .top(PAGE_SIZE)
-    .get();
-
-  messages = messages.concat(messagesData.value)
-
-  let nextLink = messagesData['@odata.nextLink'] ?
-    messagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
-    false;
-
-  while (nextLink) {
-    const nextMessagesData = await client
-      .api(nextLink)
+  try {
+    let messagesData = await client
+      .api(`/teams/${teamId}/channels/${channelId}/messages`)
       .version('beta')
       .top(PAGE_SIZE)
       .get();
 
-    if (nextMessagesData.value.length > 0) {
-      messages = messages.concat(nextMessagesData.value)
-    }
-    nextLink = nextMessagesData['@odata.nextLink'] ?
-      nextMessagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
+
+    messages = messages.concat(messagesData.value)
+
+    let nextLink = messagesData['@odata.nextLink'] ?
+      messagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
       false;
+
+    while (nextLink) {
+      const nextMessagesData = await client
+        .api(nextLink)
+        .version('beta')
+        .top(PAGE_SIZE)
+        .get();
+
+      if (nextMessagesData.value.length > 0) {
+        messages = messages.concat(nextMessagesData.value)
+      }
+      nextLink = nextMessagesData['@odata.nextLink'] ?
+        nextMessagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
+        false;
+    }
+  } catch (error) {
+    console.log("getMessagesInChannelAsync() error:" + util.inspect(error) + "\n" + error.stack)
   }
 
   return messages;

@@ -105,13 +105,11 @@ module.exports = {
     },
 
     getAllMessageIdsAsync: async function (teamId, teamsChannelId) {
-        console.log("getAllMessageIdsAsync() getting members of " + "(TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId))
         const allMessageIds = await smembersAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId))
         return allMessageIds ? allMessageIds : []
     },
 
     addMessageIdAsync: async function (teamId, teamsChannelId, messageId) {
-        console.log("sadding " + "TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId) + `, ${messageId}`)
         await saddAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId), messageId)
     }
 };

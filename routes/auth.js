@@ -19,6 +19,11 @@ router.get('/signin',
   }
 );
 
+// AAD redirects here after the user logs in via AAD.
+// AAD does a POST with some stuff (a code) in the res(ponse) object.
+// Passport then calls back to AAD to swap the code for an OAuth
+// bearer token, which consists of the access_token and refresh_token.
+// Then passport calls the signIncomplete callback with that bearer token.
 router.post('/callback',
   function (req, res, next) {
     passport.authenticate('azuread-openidconnect',

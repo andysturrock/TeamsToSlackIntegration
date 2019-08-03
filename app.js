@@ -1,3 +1,4 @@
+'use strict'
 require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
@@ -22,15 +23,15 @@ const setAsync = promisify(client.set).bind(client);
 
 // Configure simple-oauth2
 const oauth2 = require('simple-oauth2').create({
-  client: {
-    id: process.env.OAUTH_APP_ID,
-    secret: process.env.OAUTH_APP_PASSWORD
-  },
-  auth: {
-    tokenHost: process.env.OAUTH_AUTHORITY,
-    authorizePath: process.env.OAUTH_AUTHORIZE_ENDPOINT,
-    tokenPath: process.env.OAUTH_TOKEN_ENDPOINT
-  }
+    client: {
+        id: process.env.OAUTH_APP_ID,
+        secret: process.env.OAUTH_APP_PASSWORD
+    },
+    auth: {
+        tokenHost: process.env.OAUTH_AUTHORITY,
+        authorizePath: process.env.OAUTH_AUTHORIZE_ENDPOINT,
+        tokenPath: process.env.OAUTH_TOKEN_ENDPOINT
+    }
 });
 
 // Configure passport
@@ -38,56 +39,50 @@ const oauth2 = require('simple-oauth2').create({
 // Passport calls serializeUser and deserializeUser to
 // manage users
 passport.serializeUser(async function (user, done) {
-  console.trace("serializeUser")
-  console.log("user = " + util.inspect(user))
-  // Use the OID property of the user as a key
-  await setAsync(`users/${user.profile.oid}`, JSON.stringify(user))
-  done(null, user.profile.oid);
+    // Use the OID property of the user as a key
+    await setAsync(`users/${user.profile.oid}`, JSON.stringify(user))
+    done(null, user.profile.oid);
 });
 
 passport.deserializeUser(async function (id, done) {
-  console.trace("serializeUser")
-  console.log("user = " + util.inspect(id))
-  user = JSON.parse(await getAsync(`users/${id}`))
-  done(null, user)
+    const user = JSON.parse(await getAsync(`users/${id}`))
+    done(null, user)
 });
 
 // Callback function called once the sign-in is complete
 // and an access token has been obtained
 async function signInComplete(iss, sub, profile, accessToken, refreshToken, params, done) {
-  if (!profile.oid) {
-    return done(new Error("No OID found in user profile."), null);
-  }
-
-  try {
-    const user = await graph.getUserDetails(accessToken);
-
-    if (user) {
-      // Add properties to profile
-      profile['email'] = user.mail ? user.mail : user.userPrincipalName;
-      console.log("user = " + util.inspect(user))
+    if (!profile.oid) {
+        return done(new Error("No OID found in user profile."), null);
     }
-  } catch (err) {
-    done(err, null);
-  }
 
-  // Create a simple-oauth2 token from raw tokens
-  let oauthToken = oauth2.accessToken.create(params);
+    try {
+        const user = await graph.getUserDetails(accessToken);
 
-  // Save the profile and tokens in user storage
-  const profileAndToken = { profile, oauthToken }
-  await setAsync(`users/${profile.oid}`, JSON.stringify(profileAndToken))
+        if (user) {
+            // Add properties to profile
+            profile['email'] = user.mail ? user.mail : user.userPrincipalName;
+            console.log("user = " + util.inspect(user))
+        }
+    } catch (err) {
+        done(err, null);
+    }
+    // Create a simple-oauth2 token from raw tokens
+    const oauthToken = oauth2.accessToken.create(params);
 
-  var teams = require('./teams');
-  // Every 5 seconds, poll Teams and get the messages
-  setInterval(teams.pollTeamsForMessagesAsync.bind(this, accessToken), 5000);
+    // Save the profile and tokens in user storage
+    const profileAndToken = { profile, oauthToken }
+    await setAsync(`users/${profile.oid}`, JSON.stringify(profileAndToken))
 
-  return done(null, profileAndToken);
+    // var teams = require('./teams');
+    // // Every 5 seconds, poll Teams and get the messages
+    // setInterval(teams.pollTeamsForMessagesAsync.bind(this, accessToken), 5000);
+
+    return done(null, profileAndToken);
 }
 
 // Configure OIDC strategy
-passport.use(new OIDCStrategy(
-  {
+passport.use(new OIDCStrategy({
     identityMetadata: `${process.env.OAUTH_AUTHORITY}${process.env.OAUTH_ID_METADATA}`,
     clientID: process.env.OAUTH_APP_ID,
     responseType: 'code id_token',
@@ -98,8 +93,8 @@ passport.use(new OIDCStrategy(
     validateIssuer: false,
     passReqToCallback: false,
     scope: process.env.OAUTH_SCOPES.split(' ')
-  },
-  signInComplete
+},
+    signInComplete
 ));
 
 var indexRouter = require('./routes/index');
@@ -112,10 +107,10 @@ var app = express();
 
 // Session middleware
 app.use(session({
-  store: new RedisStore(),
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: false
+    store: new RedisStore(),
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: false
 }));
 
 // Flash middleware
@@ -123,18 +118,18 @@ app.use(flash());
 
 // Set up local vars for template layout
 app.use(function (req, res, next) {
-  // Read any flashed errors and save
-  // in the response locals
-  res.locals.error = req.flash('error_msg');
+    // Read any flashed errors and save
+    // in the response locals
+    res.locals.error = req.flash('error_msg');
 
-  // Check for simple error string and
-  // convert to layout's expected format
-  var errs = req.flash('error');
-  for (var i in errs) {
-    res.locals.error.push({ message: 'An error occurred', debug: errs[i] });
-  }
+    // Check for simple error string and
+    // convert to layout's expected format
+    var errs = req.flash('error');
+    for (var i in errs) {
+        res.locals.error.push({ message: 'An error occurred', debug: errs[i] });
+    }
 
-  next();
+    next();
 });
 
 // view engine setup
@@ -145,7 +140,7 @@ var hbs = require('hbs');
 var moment = require('moment');
 // Helper to format date/time sent by Graph
 hbs.registerHelper('eventDateTime', function (dateTime) {
-  return moment(dateTime).format('M/D/YY h:mm A');
+    return moment(dateTime).format('M/D/YY h:mm A');
 });
 
 app.use(logger('dev'));
@@ -159,12 +154,12 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(function (req, res, next) {
-  // Set the authenticated user in the
-  // template locals
-  if (req.user) {
-    res.locals.user = req.user.profile;
-  }
-  next();
+    // Set the authenticated user in the
+    // template locals
+    if (req.user) {
+        res.locals.user = req.user.profile;
+    }
+    next();
 });
 
 app.use('/', indexRouter);
@@ -175,22 +170,34 @@ app.use('/messages', messagesRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  next(createError(404));
+    next(createError(404));
 });
 
 // error handler
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+    // render the error page
+    res.status(err.status || 500);
+    res.render('error');
 });
 
-// var teams = require('./teams');
-// // Every 5 seconds, poll Teams and get the messages
-// setInterval(teams.pollTeamsForMessagesAsync.bind(this, accessToken), 5000);
+
+const tokens = require('./tokens.js');
+const checkForMessagesWithoutUserLogon = async () => {
+    const profileAndToken = JSON.parse(await getAsync('users/5a85aa45-9606-4698-b599-44697e2cbfcb'))
+    const oauthToken = oauth2.accessToken.create(profileAndToken.oauthToken.token);
+    try {
+        const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
+        var teams = require('./teams');
+        await teams.pollTeamsForMessagesAsync(accessToken)
+    } catch (err) {
+        console.log("Error checkForMessagesWithoutUserLogon(): " + util.inspect(err) + err.stack)
+    }
+}
+
+setInterval(checkForMessagesWithoutUserLogon, 5000);
 
 module.exports = app;

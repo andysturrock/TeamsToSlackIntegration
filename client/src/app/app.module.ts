@@ -11,6 +11,8 @@ import { AppComponent } from './app.component';
 import { TopNavBarComponent } from './top-nav-bar/top-nav-bar.component';
 import { OAuthSettings } from '../oauth';
 import { HomeComponent } from './home/home.component';
+import { MappingCardComponent } from './mapping-card/mapping-card.component';
+import {MatCardModule} from '@angular/material/card';
 
 // Add FontAwesome icons
 library.add(faExternalLinkAlt);
@@ -20,7 +22,8 @@ library.add(faUserCircle);
   declarations: [
     AppComponent,
     TopNavBarComponent,
-    HomeComponent
+    HomeComponent,
+    MappingCardComponent
   ],
   imports: [
     BrowserModule,
@@ -28,7 +31,8 @@ library.add(faUserCircle);
     FontAwesomeModule,
     MsalModule.forRoot({
       clientID: OAuthSettings.appId
-    })
+    }),
+    MatCardModule
   ],
   providers: [],
   bootstrap: [AppComponent]

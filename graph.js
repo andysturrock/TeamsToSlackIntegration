@@ -27,7 +27,8 @@ module.exports = {
       return teamsAndChannels;
     }
     catch (error) {
-      logger.error("getTeamsAndChannelsAsync(): " + error.stack)
+      logger.error("getTeamsAndChannelsAsync() %o ", error)
+      throw (error)
     }
   },
 
@@ -59,7 +60,8 @@ module.exports = {
       return messages;
     }
     catch (error) {
-      logger.error("getMessagesAsync(): " + error.stack)
+      logger.error("getMessagesAsync() %o", error)
+      throw (error)
     }
   },
 
@@ -69,7 +71,7 @@ module.exports = {
       return allReplies
     }
     const repliesAfter = []
-    if (!repliesAfter) {
+    if (!allReplies) {
       return repliesAfter
     }
     allReplies.forEach(reply => {
@@ -89,7 +91,8 @@ module.exports = {
       return replies;
     }
     catch (error) {
-      logger.error("getRepliesAsync(): " + error.stack)
+      logger.error("getRepliesAsync() %o", error)
+      throw (error)
     }
   }
 };
@@ -146,7 +149,8 @@ async function getMessagesInChannelAsync(client, teamId, channelId) {
         false;
     }
   } catch (error) {
-    logger.error("getMessagesInChannelAsync():" + util.inspect(error) + "\n" + error.stack)
+    logger.error("getMessagesInChannelAsync() %o", error)
+    throw (error)
   }
 
   return messages;

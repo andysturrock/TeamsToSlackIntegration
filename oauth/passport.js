@@ -45,6 +45,7 @@ async function signInComplete(iss, sub, profile, accessToken, refreshToken, para
             logger.info("user = " + util.inspect(user))
         }
     } catch (err) {
+        logger.error("signInComplete() %o", err)
         done(err, null);
     }
     // Create a simple-oauth2 token from raw tokens

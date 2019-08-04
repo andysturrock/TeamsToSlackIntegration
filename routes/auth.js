@@ -17,7 +17,7 @@ router.get('/signin',
         }
       )(req, res, next);
     } catch (error) {
-      logger.error("router.get('/signin'): " + error)
+      logger.error("router.get('/signin') %o", error)
     }
   },
   function (req, res) {
@@ -41,7 +41,7 @@ router.post('/callback',
         }
       )(req, res, next);
     } catch (error) {
-      logger.error("router.get('/callback'): " + error)
+      logger.error("router.get('/callback') %o", error)
     }
   },
   function (req, res) {
@@ -57,7 +57,7 @@ router.get('/signout',
         res.redirect('/');
       });
     } catch (error) {
-      logger.error("router.get('/signout'): " + error)
+      logger.error("router.get('/signout') %o", error)
     }
   }
 );

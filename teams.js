@@ -77,7 +77,7 @@ module.exports = {
         }
       }
     } catch (error) {
-      logger.error(`Error polling for Teams messages: ${error}\n${error.stack}`)
+      logger.error("Error polling for Teams messages: %o %s", error, error.stack)
     } finally {
       alreadyPolling = false
     }

@@ -1,7 +1,7 @@
 'use strict'
 var express = require('express');
 var router = express.Router();
-var tokens = require('../tokens.js');
+var tokens = require('../oauth/tokens.js');
 var graph = require('../graph.js');
 var util = require('util')
 

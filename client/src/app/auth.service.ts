@@ -19,6 +19,15 @@ export class AuthService {
     this.getUser().then((user) => {this.user = user});
   }
 
+  handleAuthentication(): void {
+    console.error("//TODO")
+  }
+
+  public isAuthenticated(): boolean {
+    console.error("//TODO")
+    return true;
+  }
+
   // Prompt the user to sign in and
   // grant consent to the requested permission scopes
   async signIn(): Promise<void> {

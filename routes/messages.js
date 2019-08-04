@@ -5,6 +5,7 @@ const tokens = require('../oauth/tokens.js');
 const graph = require('../graph.js');
 const util = require('util')
 
+
 router.get('/:team_id/:channel_id',
   async function(req, res) {
     const team_id = req.params.team_id;
@@ -34,11 +35,11 @@ router.get('/:team_id/:channel_id',
           const messages = await graph.getMessagesAsync(accessToken, team_id, channel_id);
 
           for(message of messages) {
-              console.log("Message body" + util.inspect(message.body))
-              console.log("Message from" + util.inspect(message.from.user))
+              logger.debug("Message body" + util.inspect(message.body))
+              logger.debug("Message from" + util.inspect(message.from.user))
               const replies = await graph.getRepliesAsync(accessToken, team_id, channel_id, message.id);
               for(reply of replies) {
-                console.log("reply body" + util.inspect(reply.body))
+                logger.debug.log("reply body" + util.inspect(reply.body))
               }
           }
           params.messages = messages;

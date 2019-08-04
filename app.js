@@ -4,11 +4,12 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const logger = require('morgan');
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
 const flash = require('connect-flash');
 const util = require('util')
+const logger = require('pino')()
+const pino = require('express-pino-logger')()
 
 const passport = require('./oauth/passport')
 
@@ -19,6 +20,7 @@ const teamsRouter = require('./routes/teams');
 const messagesRouter = require('./routes/messages');
 
 const app = express();
+app.use(pino)
 
 // Session middleware
 app.use(session({
@@ -58,7 +60,6 @@ hbs.registerHelper('eventDateTime', function (dateTime) {
     return moment(dateTime).format('M/D/YY h:mm A');
 });
 
-app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -113,7 +114,7 @@ const checkForMessagesWithoutUserLogon = async () => {
         const teams = require('./teams');
         await teams.pollTeamsForMessagesAsync(accessToken)
     } catch (err) {
-        console.log("Error checkForMessagesWithoutUserLogon(): " + util.inspect(err) + err.stack)
+        logger.error("checkForMessagesWithoutUserLogon(): %o %s", util.inspect(err), err.stack)
     }
 }
 

@@ -15,12 +15,15 @@
     "debug": "^4.1.1",
     "dotenv": "^8.0.0",
     "express": "~4.16.0",
+    "express-pino-logger": "^4.0.0",
     "express-session": "^1.16.2",
     "hbs": "^4.0.4",
     "http-errors": "^1.7.2",
     "moment": "^2.24.0",
     "morgan": "~1.9.0",
     "passport-azure-ad": "^4.0.0",
+    "pino": "^5.13.1",
+    "pino-pretty": "^3.2.0",
     "redis": "^2.8.0",
     "simple-oauth2": "^2.2.1"
   }

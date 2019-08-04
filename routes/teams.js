@@ -3,6 +3,7 @@ const router = express.Router();
 const tokens = require('../oauth/tokens.js');
 const graph = require('../graph.js');
 const util = require('util')
+const logger = require('pino')()
 
 router.get('/',
   async function(req, res) {
@@ -28,7 +29,7 @@ router.get('/',
       if (accessToken && accessToken.length > 0) {
         try {
           const teamsAndChannels = await graph.getTeamsAndChannelsAsync(accessToken);
-          console.log("teamsAndChannels:" + util.inspect(teamsAndChannels))
+          logger.debug("teamsAndChannels:" + util.inspect(teamsAndChannels))
           params.teamsAndChannels = teamsAndChannels;
         } catch (err) {
           req.flash('error_msg', {

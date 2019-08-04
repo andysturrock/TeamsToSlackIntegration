@@ -42,7 +42,7 @@ async function signInComplete(iss, sub, profile, accessToken, refreshToken, para
         if (user) {
             // Add properties to profile
             profile['email'] = user.mail ? user.mail : user.userPrincipalName;
-            console.log("user = " + util.inspect(user))
+            logger.info("user = " + util.inspect(user))
         }
     } catch (err) {
         done(err, null);

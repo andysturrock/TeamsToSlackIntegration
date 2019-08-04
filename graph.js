@@ -1,6 +1,7 @@
 'use strict'
 const graph = require('@microsoft/microsoft-graph-client');
 const util = require('util')
+const logger = require('pino')()
 
 const PAGE_SIZE = 100
 
@@ -26,7 +27,7 @@ module.exports = {
       return teamsAndChannels;
     }
     catch (error) {
-      console.log("Error getting Teams and Channels: " + error.stack)
+      logger.error("getTeamsAndChannelsAsync(): " + error.stack)
     }
   },
 
@@ -58,7 +59,7 @@ module.exports = {
       return messages;
     }
     catch (error) {
-      console.log("Error getting Messages: " + error.stack)
+      logger.error("getMessagesAsync(): " + error.stack)
     }
   },
 
@@ -88,7 +89,7 @@ module.exports = {
       return replies;
     }
     catch (error) {
-      console.log("Error getting replies: " + error.stack)
+      logger.error("getRepliesAsync(): " + error.stack)
     }
   }
 };
@@ -145,7 +146,7 @@ async function getMessagesInChannelAsync(client, teamId, channelId) {
         false;
     }
   } catch (error) {
-    console.log("getMessagesInChannelAsync() error:" + util.inspect(error) + "\n" + error.stack)
+    logger.error("getMessagesInChannelAsync():" + util.inspect(error) + "\n" + error.stack)
   }
 
   return messages;

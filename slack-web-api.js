@@ -1,5 +1,6 @@
 'use strict'
 const util = require('util')
+const logger = require('pino')()
 
 
 // TODO - redo this.  Having a module level "global" variable
@@ -40,7 +41,7 @@ module.exports = {
       }
     }
     catch (error) {
-      console.log("Error posting to Slack: " + error.stack)
+      logger.error("postMessageAsync(): " + error.stack)
     }
   }
 };

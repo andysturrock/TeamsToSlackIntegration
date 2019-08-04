@@ -1,5 +1,6 @@
 'use strict'
-
+const util = require('util')
+const logger = require('pino')()
 const passport = require('passport');
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 const graph = require('../graph');
@@ -9,10 +10,6 @@ const { promisify } = require('util');
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);
 const oauth2 = require('./oauth.js')
-
-module.exports = passport;
-
-
 
 // Configure passport
 
@@ -28,6 +25,7 @@ passport.deserializeUser(async function (id, done) {
     const user = JSON.parse(await getAsync(`users/${id}`))
     done(null, user)
 });
+
 
 // Callback function called once the sign-in is complete
 // and an access token has been obtained
@@ -55,7 +53,7 @@ async function signInComplete(iss, sub, profile, accessToken, refreshToken, para
     const profileAndToken = { profile, oauthToken }
     await setAsync(`users/${profile.oid}`, JSON.stringify(profileAndToken))
 
-    return done(null, profileAndToken);
+    return done(null, profileAndToken)
 }
 
 // Configure OIDC strategy
@@ -74,3 +72,4 @@ passport.use(new OIDCStrategy({
     signInComplete
 ));
 
+module.exports = passport;

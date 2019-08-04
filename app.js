@@ -11,7 +11,7 @@ const util = require('util')
 const logger = require('pino')()
 const pino = require('express-pino-logger')()
 
-const passport = require('./oauth/passport')
+const configuredPassport = require('./oauth/passport')
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -66,8 +66,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize passport
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(configuredPassport.initialize());
+app.use(configuredPassport.session());
 
 app.use(function (req, res, next) {
     // Set the authenticated user in the

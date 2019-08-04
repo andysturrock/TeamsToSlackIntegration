@@ -1,13 +1,13 @@
 'use strict'
-var util = require('util')
+const util = require('util')
 
 // Pesist the following to redis:
 // Last polled time for each Teams channel
 // Map of Teams {teamId, channelId} -> Slack channelId
 // Map of Slack channelId -> Teams {teamId, channelId}
 // Map of Teams {teamId, channelId, messageId} -> Slack messageId 
-var redis = require("redis")
-var client = redis.createClient();
+const redis = require("redis")
+const client = redis.createClient();
 const { promisify } = require('util');
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);

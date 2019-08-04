@@ -1,9 +1,9 @@
 'use strict'
-var express = require('express');
-var router = express.Router();
-var tokens = require('../oauth/tokens.js');
-var graph = require('../graph.js');
-var util = require('util')
+const express = require('express');
+const router = express.Router();
+const tokens = require('../oauth/tokens.js');
+const graph = require('../graph.js');
+const util = require('util')
 
 router.get('/:team_id/:channel_id',
   async function(req, res) {
@@ -19,7 +19,7 @@ router.get('/:team_id/:channel_id',
       };
 
       // Get the access token
-      var accessToken;
+      let accessToken;
       try {
         accessToken = await tokens.getAccessTokenAsync(req);
       } catch (err) {
@@ -31,7 +31,7 @@ router.get('/:team_id/:channel_id',
 
       if (accessToken && accessToken.length > 0) {
         try {
-          var messages = await graph.getMessagesAsync(accessToken, team_id, channel_id);
+          const messages = await graph.getMessagesAsync(accessToken, team_id, channel_id);
 
           for(message of messages) {
               console.log("Message body" + util.inspect(message.body))

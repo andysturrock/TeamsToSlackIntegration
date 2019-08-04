@@ -1,24 +1,24 @@
 'use strict'
 require('dotenv').config();
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var session = require('express-session');
-var RedisStore = require('connect-redis')(session);
-var flash = require('connect-flash');
-var util = require('util')
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const flash = require('connect-flash');
+const util = require('util')
 
 const passport = require('./oauth/passport')
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var authRouter = require('./routes/auth');
-var teamsRouter = require('./routes/teams');
-var messagesRouter = require('./routes/messages');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
+const teamsRouter = require('./routes/teams');
+const messagesRouter = require('./routes/messages');
 
-var app = express();
+const app = express();
 
 // Session middleware
 app.use(session({
@@ -39,8 +39,8 @@ app.use(function (req, res, next) {
 
     // Check for simple error string and
     // convert to layout's expected format
-    var errs = req.flash('error');
-    for (var i in errs) {
+    const errs = req.flash('error');
+    for (let i in errs) {
         res.locals.error.push({ message: 'An error occurred', debug: errs[i] });
     }
 
@@ -51,8 +51,8 @@ app.use(function (req, res, next) {
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
-var hbs = require('hbs');
-var moment = require('moment');
+const hbs = require('hbs');
+const moment = require('moment');
 // Helper to format date/time sent by Graph
 hbs.registerHelper('eventDateTime', function (dateTime) {
     return moment(dateTime).format('M/D/YY h:mm A');
@@ -110,7 +110,7 @@ const checkForMessagesWithoutUserLogon = async () => {
         const profileAndToken = JSON.parse(await getAsync('users/5a85aa45-9606-4698-b599-44697e2cbfcb'))
         const oauthToken = oauth2.accessToken.create(profileAndToken.oauthToken.token);
         const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
-        var teams = require('./teams');
+        const teams = require('./teams');
         await teams.pollTeamsForMessagesAsync(accessToken)
     } catch (err) {
         console.log("Error checkForMessagesWithoutUserLogon(): " + util.inspect(err) + err.stack)

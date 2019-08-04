@@ -1,9 +1,9 @@
 'use strict'
-var util = require('util')
-var graph = require('./graph.js');
-var channelMaps = require('./channel-maps')
+const util = require('util')
+const graph = require('./graph.js');
+const channelMaps = require('./channel-maps')
 
-var slackWeb = require('./slack-web-api')
+const slackWeb = require('./slack-web-api')
 
 let alreadyPolling = false
 

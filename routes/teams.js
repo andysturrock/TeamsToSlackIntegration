@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
-var tokens = require('../oauth/tokens.js');
-var graph = require('../graph.js');
-var util = require('util')
+const express = require('express');
+const router = express.Router();
+const tokens = require('../oauth/tokens.js');
+const graph = require('../graph.js');
+const util = require('util')
 
 router.get('/',
   async function(req, res) {
@@ -15,7 +15,7 @@ router.get('/',
       };
 
       // Get the access token
-      var accessToken;
+      let accessToken;
       try {
         accessToken = await tokens.getAccessTokenAsync(req);
       } catch (err) {
@@ -27,7 +27,7 @@ router.get('/',
 
       if (accessToken && accessToken.length > 0) {
         try {
-          var teamsAndChannels = await graph.getTeamsAndChannelsAsync(accessToken);
+          const teamsAndChannels = await graph.getTeamsAndChannelsAsync(accessToken);
           console.log("teamsAndChannels:" + util.inspect(teamsAndChannels))
           params.teamsAndChannels = teamsAndChannels;
         } catch (err) {

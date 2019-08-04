@@ -1,6 +1,6 @@
 'use strict'
-var graph = require('@microsoft/microsoft-graph-client');
-var util = require('util')
+const graph = require('@microsoft/microsoft-graph-client');
+const util = require('util')
 
 const PAGE_SIZE = 100
 
@@ -17,9 +17,9 @@ module.exports = {
     const client = getAuthenticatedClient(accessToken);
 
     try {
-      var teamsAndChannels = []
+      const teamsAndChannels = []
       const teams = await getMyTeamsAsync(client)
-      for (team of teams.value) {
+      for (let team of teams.value) {
         channels = await getChannelsInTeamAsync(client, team.id)
         teamsAndChannels.push({ id: `${team.id}`, displayName: `${team.displayName}`, channels: channels.value })
       }

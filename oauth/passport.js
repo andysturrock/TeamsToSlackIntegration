@@ -3,8 +3,8 @@
 const passport = require('passport');
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 const graph = require('../graph');
-var redis = require("redis")
-var client = redis.createClient();
+const redis = require("redis")
+const client = redis.createClient();
 const { promisify } = require('util');
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);

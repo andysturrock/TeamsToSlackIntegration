@@ -1,7 +1,10 @@
 'use strict'
-var util = require('util')
+const util = require('util')
 
-var webClient
+
+// TODO - redo this.  Having a module level "global" variable
+// can't be the best way.
+let webClient
 
 function connectToSlackWebAPI() {
   const { WebClient } = require('@slack/web-api');

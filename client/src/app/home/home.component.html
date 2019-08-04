@@ -1,0 +1,9 @@
+<div class="jumbotron">
+    <h1>Teams and Slack Integration</h1>
+    <p class="lead">Link Teams and Slack channels so messages are posted in both.</p>
+    <div *ngIf="authService.authenticated; then welcomeUser"></div>
+    <ng-template #welcomeUser>
+      <h4>Welcome {{ authService.user.displayName }}!</h4>
+    </ng-template>
+    <p>Current linked Slack and Teams channels...</p>
+  </div>

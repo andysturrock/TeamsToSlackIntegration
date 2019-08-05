@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PostDialogComponent } from './post-dialog.component';
+import { MappingDialogComponent } from './mapping-dialog.component';
 
-describe('PostDialogComponent', () => {
-  let component: PostDialogComponent;
-  let fixture: ComponentFixture<PostDialogComponent>;
+describe('MappingDialogComponent', () => {
+  let component: MappingDialogComponent;
+  let fixture: ComponentFixture<MappingDialogComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PostDialogComponent ]
+      declarations: [ MappingDialogComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PostDialogComponent);
+    fixture = TestBed.createComponent(MappingDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

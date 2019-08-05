@@ -1,11 +1,11 @@
 import {Injectable} from '@angular/core';
-import {Post} from '../Post';
+import {ChannelMapping} from '../ChannelMapping';
 import {Observable, of} from 'rxjs';
 
 @Injectable()
 export class DataService {
 
-  ELEMENT_DATA: Post[] = [
+  ELEMENT_DATA: ChannelMapping[] = [
     {position: 0, title: 'Post One', category: 'Web Development', date_posted: new Date(), body: 'Body 1'},
     {position: 1, title: 'Post Two', category: 'Android Development', date_posted: new Date(), body: 'Body 2'},
     {position: 2, title: 'Post Three', category: 'IOS Development', date_posted: new Date(), body: 'Body 3'},
@@ -22,19 +22,19 @@ export class DataService {
   constructor() {
   }
 
-  getData(): Observable<Post[]> {
-    return of<Post[]>(this.ELEMENT_DATA);
+  getData(): Observable<ChannelMapping[]> {
+    return of<ChannelMapping[]>(this.ELEMENT_DATA);
   }
 
   getCategories() {
     return this.categories;
   }
 
-  addPost(data) {
+  addMapping(data) {
     this.ELEMENT_DATA.push(data);
   }
 
-  deletePost(index) {
+  deleteMapping(index) {
     this.ELEMENT_DATA = [...this.ELEMENT_DATA.slice(0, index), ...this.ELEMENT_DATA.slice(index + 1)];
   }
 

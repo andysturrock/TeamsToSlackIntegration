@@ -1,10 +1,10 @@
 import {Component} from '@angular/core';
 import {DataService} from '../data/data.service';
-import {Post} from '../Post';
+import {ChannelMapping} from '../ChannelMapping';
 import {DataSource} from '@angular/cdk/table';
 import {Observable} from 'rxjs/Observable';
 import {AuthService} from '../auth.service';
-import {PostDialogComponent} from '../post-dialog/post-dialog.component';
+import {MappingDialogComponent} from '../mapping-dialog/mapping-dialog.component';
 import {MatDialog} from '@angular/material';
 
 @Component({
@@ -16,36 +16,36 @@ export class DashboardComponent {
   constructor(public auth: AuthService, public dialog: MatDialog, private dataService: DataService) {
   }
 
-  displayedColumns = ['date_posted', 'title', 'category', 'delete'];
-  dataSource = new PostDataSource(this.dataService);
+  displayedColumns = ['teams', 'slack', 'owner', 'delete'];
+  dataSource = new ChannelMappingDataSource(this.dataService);
 
-  deletePost(id) {
+  deleteMapping(id) {
     if (this.auth.isAuthenticated()) {
-      this.dataService.deletePost(id);
-      this.dataSource = new PostDataSource(this.dataService);
+      this.dataService.deleteMapping(id);
+      this.dataSource = new ChannelMappingDataSource(this.dataService);
     } else {
       alert('Log in to add/edit/delete mappings');
     }
   }
 
   openDialog(): void {
-    let dialogRef = this.dialog.open(PostDialogComponent, {
+    let dialogRef = this.dialog.open(MappingDialogComponent, {
       width: '600px',
-      data: 'Add Post'
+      data: 'Add Mapping'
     });
     dialogRef.componentInstance.event.subscribe((result) => {
-      this.dataService.addPost(result.data);
-      this.dataSource = new PostDataSource(this.dataService);
+      this.dataService.addMapping(result.data);
+      this.dataSource = new ChannelMappingDataSource(this.dataService);
     });
   }
 }
 
-export class PostDataSource extends DataSource<any> {
+export class ChannelMappingDataSource extends DataSource<any> {
   constructor(private dataService: DataService) {
     super();
   }
 
-  connect(): Observable<Post[]> {
+  connect(): Observable<ChannelMapping[]> {
     return this.dataService.getData();
   }
 

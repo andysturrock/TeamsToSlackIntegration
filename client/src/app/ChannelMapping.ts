@@ -1,4 +1,4 @@
-export interface Post {
+export interface ChannelMapping {
   title: string;
   category: string;
   date_posted: Date;

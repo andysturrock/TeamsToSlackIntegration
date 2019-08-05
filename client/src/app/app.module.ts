@@ -24,7 +24,7 @@ import {DashboardComponent} from './dashboard/dashboard.component';
 import {AppRouters} from './app.routes';
 import {DataService} from './data/data.service';
 import {AuthService} from './auth.service';
-import {PostDialogComponent} from './post-dialog/post-dialog.component';
+import {MappingDialogComponent} from './mapping-dialog/mapping-dialog.component';
 import {FormsModule} from '@angular/forms';
 
 
@@ -44,7 +44,7 @@ library.add(faUserCircle);
     AppComponent,
     WelcomeComponent,
     DashboardComponent,
-    PostDialogComponent
+    MappingDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -73,7 +73,7 @@ library.add(faUserCircle);
   providers: [DataService, AuthService],
   bootstrap: [AppComponent],
   entryComponents: [
-    PostDialogComponent
+    MappingDialogComponent
   ]
 })
 export class AppModule { }

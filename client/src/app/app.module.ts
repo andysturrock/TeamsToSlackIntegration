@@ -34,7 +34,6 @@ import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import { faUserCircle } from '@fortawesome/free-regular-svg-icons';
 import { MsalModule } from '@azure/msal-angular';
 import { OAuthSettings } from '../oauth';
-import { AuthComponent } from './auth/auth.component';
 
 // Add FontAwesome icons
 library.add(faExternalLinkAlt);
@@ -45,8 +44,7 @@ library.add(faUserCircle);
     AppComponent,
     WelcomeComponent,
     DashboardComponent,
-    PostDialogComponent,
-    AuthComponent
+    PostDialogComponent
   ],
   imports: [
     BrowserModule,

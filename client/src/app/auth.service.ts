@@ -20,13 +20,8 @@ export class AuthService {
     this.getUser().then((user) => { this.user = user });
   }
 
-  handleRedirectURI(): void {
-    console.error("TODO - handleRedirectURI()")
-  }
-
   public isAuthenticated(): boolean {
-    console.error("TODO - isAuthenticated()")
-    return false;
+    return this.authenticated;
   }
 
   // Prompt the user to sign in and

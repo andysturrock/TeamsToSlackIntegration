@@ -15,17 +15,18 @@ export class AuthService {
   constructor(
     private msalService: MsalService) {
 
+    console.error("AuthService:ctor")
     this.authenticated = this.msalService.getUser() != null;
-    this.getUser().then((user) => {this.user = user});
+    this.getUser().then((user) => { this.user = user });
   }
 
-  handleAuthentication(): void {
-    console.error("//TODO")
+  handleRedirectURI(): void {
+    console.error("TODO - handleRedirectURI()")
   }
 
   public isAuthenticated(): boolean {
-    console.error("//TODO")
-    return true;
+    console.error("TODO - isAuthenticated()")
+    return false;
   }
 
   // Prompt the user to sign in and
@@ -66,14 +67,13 @@ export class AuthService {
       // Initialize the Graph client with an auth
       // provider that requests the token from the
       // auth service
-      authProvider: async(done) => {
+      authProvider: async (done) => {
         let token = await this.getAccessToken()
           .catch((reason) => {
             done(reason, null);
           })
 
-        if (token)
-        {
+        if (token) {
           done(null, token);
         } else {
           done("Could not get an access token", null);

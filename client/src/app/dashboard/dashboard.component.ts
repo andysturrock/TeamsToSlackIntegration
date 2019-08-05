@@ -24,7 +24,7 @@ export class DashboardComponent {
       this.dataService.deletePost(id);
       this.dataSource = new PostDataSource(this.dataService);
     } else {
-      alert('Login in Before');
+      alert('Log in to add/edit/delete mappings');
     }
   }
 

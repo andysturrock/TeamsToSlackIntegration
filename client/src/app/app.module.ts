@@ -20,20 +20,6 @@ import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import { faUserCircle } from '@fortawesome/free-regular-svg-icons';
 import { MsalModule } from '@azure/msal-angular';
 import { OAuthSettings } from '../oauth';
-/*
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-
-import { HomeComponent } from './home/home.component';
-import { MappingCardComponent } from './mapping-card/mapping-card.component';
-import {MatCardModule} from '@angular/material/card';
-import { MyDashboardComponent } from './my-dashboard/my-dashboard.component';
-import { MatGridListModule } from '@angular/material/grid-list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { LayoutModule } from '@angular/cdk/layout';
-*/
 
 // Add FontAwesome icons
 library.add(faExternalLinkAlt);

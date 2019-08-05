@@ -1,23 +1,35 @@
-import {Injectable} from '@angular/core';
-import {ChannelMapping} from '../ChannelMapping';
-import {Observable, of} from 'rxjs';
+import { Injectable } from '@angular/core';
+import { ChannelMapping } from '../channelMapping';
+import { Observable, of } from 'rxjs';
 
 @Injectable()
 export class DataService {
 
   ELEMENT_DATA: ChannelMapping[] = [
-    {position: 0, title: 'Post One', category: 'Web Development', date_posted: new Date(), body: 'Body 1'},
-    {position: 1, title: 'Post Two', category: 'Android Development', date_posted: new Date(), body: 'Body 2'},
-    {position: 2, title: 'Post Three', category: 'IOS Development', date_posted: new Date(), body: 'Body 3'},
-    {position: 3, title: 'Post Four', category: 'Android Development', date_posted: new Date(), body: 'Body 4'},
-    {position: 4, title: 'Post Five', category: 'IOS Development', date_posted: new Date(), body: 'Body 5'},
-    {position: 5, title: 'Post Six', category: 'Web Development', date_posted: new Date(), body: 'Body 6'},
+    {
+      position: 0, teamId: '1', teamName: 'Team Name 1', teamsChannelId: '1.1', teamsChannelName: 'channel 1',
+      workspaceId: 'workspace 1', workspaceName: 'Workspace 1', slackChannelId: '1', slackChannelName: 'channel 1'
+    },
+    {
+      position: 0, teamId: '1', teamName: 'Team Name 1', teamsChannelId: '1.2', teamsChannelName: 'channel 2',
+      workspaceId: 'workspace 1', workspaceName: 'Workspace 1', slackChannelId: '2', slackChannelName: 'channel 2'
+    },
   ];
   categories = [
-    {value: 'Web-Development', viewValue: 'Web Development'},
-    {value: 'Android-Development', viewValue: 'Android Development'},
-    {value: 'IOS-Development', viewValue: 'IOS Development'}
+    { value: 'Web-Development', viewValue: 'Web Development' },
+    { value: 'Android-Development', viewValue: 'Android Development' },
+    { value: 'IOS-Development', viewValue: 'IOS Development' }
   ];
+
+  // teamId: string;
+  // teamName: string;
+  // teamsChannelId: string;
+  // teamsChannelName: string;
+  // workspaceId: string;
+  // workspaceName: string;
+  // slackChannelId: string;
+  // slackChannelName: string;
+  // position: number;
 
   constructor() {
   }

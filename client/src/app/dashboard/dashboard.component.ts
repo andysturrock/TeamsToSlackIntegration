@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {DataService} from '../data/data.service';
-import {ChannelMapping} from '../ChannelMapping';
+import {ChannelMapping} from '../channelMapping';
 import {DataSource} from '@angular/cdk/table';
 import {Observable} from 'rxjs/Observable';
 import {AuthService} from '../auth.service';

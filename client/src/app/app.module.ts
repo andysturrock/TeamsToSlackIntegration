@@ -23,7 +23,6 @@ import { OAuthSettings } from '../oauth';
 /*
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { TopNavBarComponent } from './top-nav-bar/top-nav-bar.component';
 
 import { HomeComponent } from './home/home.component';
 import { MappingCardComponent } from './mapping-card/mapping-card.component';

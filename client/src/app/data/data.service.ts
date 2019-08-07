@@ -8,11 +8,13 @@ export class DataService {
   ELEMENT_DATA: ChannelMapping[] = [
     {
       position: 0, teamId: '1', teamName: 'Team Name 1', teamsChannelId: '1.1', teamsChannelName: 'channel 1',
-      workspaceId: 'workspace 1', workspaceName: 'Workspace 1', slackChannelId: '1', slackChannelName: 'channel 1'
+      workspaceId: 'workspace 1', workspaceName: 'Workspace 1', slackChannelId: '1', slackChannelName: 'channel 1',
+      mappingOwnerId: '1', mappingOwnerName: 'andrew.sturrock@uk.bp.com'
     },
     {
-      position: 0, teamId: '1', teamName: 'Team Name 1', teamsChannelId: '1.2', teamsChannelName: 'channel 2',
-      workspaceId: 'workspace 1', workspaceName: 'Workspace 1', slackChannelId: '2', slackChannelName: 'channel 2'
+      position: 1, teamId: '1', teamName: 'Team Name 1', teamsChannelId: '1.2', teamsChannelName: 'channel 2',
+      workspaceId: 'workspace 1', workspaceName: 'Workspace 1', slackChannelId: '2', slackChannelName: 'channel 2',
+      mappingOwnerId: '1', mappingOwnerName: 'andrew.sturrock@uk.bp.com'
     },
   ];
   categories = [

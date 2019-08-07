@@ -7,5 +7,7 @@ export interface ChannelMapping {
   workspaceName: string;
   slackChannelId: string;
   slackChannelName: string;
+  mappingOwnerId: string;
+  mappingOwnerName: string;
   position: number;
 }

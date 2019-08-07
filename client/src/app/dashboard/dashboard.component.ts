@@ -16,7 +16,6 @@ export class DashboardComponent {
   constructor(public auth: AuthService, public dialog: MatDialog, private dataService: DataService) {
   }
 
-  displayedColumns = ['teams', 'slack', 'owner', 'delete'];
   dataSource = new ChannelMappingDataSource(this.dataService);
 
   deleteMapping(id) {
@@ -25,6 +24,14 @@ export class DashboardComponent {
       this.dataSource = new ChannelMappingDataSource(this.dataService);
     } else {
       alert('Log in to add/edit/delete mappings');
+    }
+  }
+
+  getDisplayedColumns() {
+    if(this.auth.isAuthenticated()) {
+      return ['teams', 'slack', 'owner', 'delete'];
+    } else {
+      return ['teams', 'slack', 'owner'];
     }
   }
 

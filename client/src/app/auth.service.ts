@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
 import { Client } from '@microsoft/microsoft-graph-client';
+import * as util from 'util';
 
 import { OAuthSettings } from '../oauth';
 import { User } from './user';
@@ -27,20 +28,22 @@ export class AuthService {
   // Prompt the user to sign in and
   // grant consent to the requested permission scopes
   async signIn(): Promise<void> {
-    let result = await this.msalService.loginPopup(OAuthSettings.scopes)
-      .catch((reason) => {
-        console.error('Login failed', JSON.stringify(reason, null, 2));
-      });
-
-    if (result) {
-      this.authenticated = true;
-      this.user = await this.getUser();
+    try {
+      const result = await this.msalService.loginPopup(OAuthSettings.scopes);
+      console.error('Login succeeded', JSON.stringify(result, null, 2));
+      if (result) {
+        this.authenticated = true;
+        this.user = await this.getUser();
+      }
+    } catch (error) {
+      console.error('Login failed', JSON.stringify(error, null, 2));
     }
   }
 
   // Sign out
   signOut(): void {
-    this.msalService.logout();
+    const result = this.msalService.logout();
+    console.error("loutout result = " + util.inspect(result))
     this.user = null;
     this.authenticated = false;
   }

@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
-import {AppComponent} from './app.component';
+import { AppComponent } from './app.component';
 //import {MaterialModule} from './material.module';
 import {
   MatSidenavModule,
@@ -17,15 +17,15 @@ import {
 } from '@angular/material';
 
 
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {FlexLayoutModule} from '@angular/flex-layout';
-import {WelcomeComponent} from './welcome/welcome.component';
-import {DashboardComponent} from './dashboard/dashboard.component';
-import {AppRouters} from './app.routes';
-import {DataService} from './data/data.service';
-import {AuthService} from './auth.service';
-import {MappingDialogComponent} from './mapping-dialog/mapping-dialog.component';
-import {FormsModule} from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { WelcomeComponent } from './welcome/welcome.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { AppRouters } from './app.routes';
+import { DataService } from './data/data.service';
+import { AuthService } from './auth/auth.service';
+import { MappingDialogComponent } from './mapping-dialog/mapping-dialog.component';
+import { FormsModule } from '@angular/forms';
 
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -33,6 +33,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import { faUserCircle } from '@fortawesome/free-regular-svg-icons';
 import { MsalModule } from '@azure/msal-angular';
+import { LogLevel } from "msal";
 import { OAuthSettings } from '../oauth';
 
 // Add FontAwesome icons
@@ -55,7 +56,8 @@ library.add(faUserCircle);
     FormsModule,
     FontAwesomeModule,
     MsalModule.forRoot({
-      clientID: OAuthSettings.appId
+      clientID: OAuthSettings.appId,
+      redirectUri: OAuthSettings.redirectURI,
     }),
 
 

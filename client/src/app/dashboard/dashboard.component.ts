@@ -3,7 +3,7 @@ import {DataService} from '../data/data.service';
 import {ChannelMapping} from '../channelMapping';
 import {DataSource} from '@angular/cdk/table';
 import {Observable} from 'rxjs/Observable';
-import {AuthService} from '../auth.service';
+import {AuthService} from '../auth/auth.service';
 import {MappingDialogComponent} from '../mapping-dialog/mapping-dialog.component';
 import {MatDialog} from '@angular/material';
 

@@ -3,8 +3,8 @@ import { MsalService } from '@azure/msal-angular';
 import { Client } from '@microsoft/microsoft-graph-client';
 import * as util from 'util';
 
-import { OAuthSettings } from '../oauth';
-import { User } from './user';
+import { OAuthSettings } from '../../oauth';
+import { User } from '../user';
 
 @Injectable({
   providedIn: 'root'
@@ -43,7 +43,6 @@ export class AuthService {
   // Sign out
   signOut(): void {
     const result = this.msalService.logout();
-    console.error("loutout result = " + util.inspect(result))
     this.user = null;
     this.authenticated = false;
   }

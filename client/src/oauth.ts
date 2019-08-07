@@ -1,6 +1,7 @@
 export const OAuthSettings = {
-    appId: '79629a7a-ad66-4411-908f-206495b4dfa1',
+    appId: '16eda5ad-b5f0-48dd-aa40-39dfa42829cd',
     scopes: [
         "user.read"
-    ]
+    ],
+    redirectURI: 'http://localhost:4200/'
 };

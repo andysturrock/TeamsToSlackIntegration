@@ -6,6 +6,7 @@ import {Observable} from 'rxjs/Observable';
 import {AuthService} from '../auth/auth.service';
 import {MappingDialogComponent} from '../mapping-dialog/mapping-dialog.component';
 import {MatDialog} from '@angular/material';
+import * as util from 'util';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,7 +17,12 @@ export class DashboardComponent {
   constructor(public auth: AuthService, public dialog: MatDialog, private dataService: DataService) {
   }
 
-  dataSource = new ChannelMappingDataSource(this.dataService);
+  private dataSource = new ChannelMappingDataSource(this.dataService);
+
+  getDataSource() {
+    console.error("getDataSource() returning: " + util.inspect(this.dataSource));
+    return this.dataSource;
+  }
 
   deleteMapping(id) {
     if (this.auth.isAuthenticated()) {

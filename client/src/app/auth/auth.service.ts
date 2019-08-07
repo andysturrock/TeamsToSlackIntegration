@@ -15,8 +15,6 @@ export class AuthService {
 
   constructor(
     private msalService: MsalService) {
-
-    console.error("AuthService:ctor")
     this.authenticated = this.msalService.getUser() != null;
     this.getUser().then((user) => { this.user = user });
   }

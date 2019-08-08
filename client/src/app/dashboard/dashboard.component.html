@@ -39,17 +39,19 @@
                   <mat-header-cell *matHeaderCellDef> Mapping Owner </mat-header-cell>
                   <mat-cell *matCellDef="let element"> {{element.mappingOwnerName}} </mat-cell>
                 </ng-container>
-                <div *ngIf="auth.isAuthenticated(); then displayDeleteButton"></div>
-                <ng-template #displayDeleteButton>
-                  <ng-container matColumnDef="delete">
-                    <mat-header-cell *matHeaderCellDef></mat-header-cell>
-                    <mat-cell *matCellDef="let element">
+
+                <ng-container matColumnDef="delete">
+                  <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                  <mat-cell *matCellDef="let element">
+                    <div *ngIf="displayDeleteButton(element); then deleteButton"></div>
+                    <ng-template #deleteButton>
                       <a (click)="deleteMapping(element.position)" type="button">
                         <mat-icon class="icon">delete</mat-icon>
                       </a>
-                    </mat-cell>
-                  </ng-container>
-                </ng-template>
+                    </ng-template>
+                  </mat-cell>
+                </ng-container>
+
                 <mat-header-row *matHeaderRowDef="getDisplayedColumns()"></mat-header-row>
                 <mat-row *matRowDef="let row; columns: getDisplayedColumns();"></mat-row>
               </mat-table>

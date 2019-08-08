@@ -4,7 +4,7 @@
     <mat-form-field>
       <mat-select matInput placeholder="Team name" required [(ngModel)]="channelMapping.teamName" name="teamName"
         (selectionChange)="onTeamSelection($event)">
-        <mat-option *ngFor="let team of teams" [value]="team.teamName">
+        <mat-option *ngFor="let team of teams" [value]="team">
           {{ team.teamName }}
         </mat-option>
       </mat-select>
@@ -20,7 +20,7 @@
     <mat-form-field>
       <mat-select matInput placeholder="Slack workspace" required [(ngModel)]="channelMapping.workspaceName"
       name="workspaceName" (selectionChange)="onWorkspaceSelection($event)">
-        <mat-option *ngFor="let workspace of workspaces" [value]="workspace.workspaceName">
+        <mat-option *ngFor="let workspace of workspaces" [value]="workspace">
           {{ workspace.workspaceName }}
         </mat-option>
       </mat-select>

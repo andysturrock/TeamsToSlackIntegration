@@ -20,8 +20,11 @@ export class DashboardComponent {
   private dataSource = new ChannelMappingDataSource(this.dataService);
 
   getDataSource() {
-    console.error("getDataSource() returning: " + util.inspect(this.dataSource));
     return this.dataSource;
+  }
+
+  displayDeleteButton(element): boolean {
+    return (element && this.auth.getUser() && element.mappingOwnerId == this.auth.getUser().id)
   }
 
   deleteMapping(id) {

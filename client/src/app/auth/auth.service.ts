@@ -11,12 +11,12 @@ import { User } from '../user';
 })
 export class AuthService {
   public authenticated: boolean;
-  public user: User;
+  private user: User;
 
   constructor(
     private msalService: MsalService) {
     this.authenticated = this.msalService.getUser() != null;
-    this.getUser().then((user) => { this.user = user });
+    this.setUser().then((user) => { this.user = user });
   }
 
   public isAuthenticated(): boolean {
@@ -31,7 +31,7 @@ export class AuthService {
       console.error('Login succeeded', JSON.stringify(result, null, 2));
       if (result) {
         this.authenticated = true;
-        this.user = await this.getUser();
+        this.user = await this.setUser();
       }
     } catch (error) {
       console.error('Login failed', JSON.stringify(error, null, 2));
@@ -55,7 +55,11 @@ export class AuthService {
     return result;
   }
 
-  private async getUser(): Promise<User> {
+  public getUser(): User {
+    return this.user;
+  }
+
+  private async setUser(): Promise<User> {
     if (!this.authenticated) return null;
 
     let graphClient = Client.init({
@@ -78,8 +82,6 @@ export class AuthService {
 
     // Get the user from Graph (GET /me)
     let graphUser = await graphClient.api('/me').get();
-
-    console.error("graphUser = " + util.inspect(graphUser))
 
     let user = new User();
     user.displayName = graphUser.displayName;

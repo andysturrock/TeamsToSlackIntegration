@@ -17,15 +17,6 @@ export class DataService {
       mappingOwnerId: '1', mappingOwnerName: 'andrew.sturrock@uk.bp.com'
     },
   ];
-  private categories = [
-    { value: 'Web-Development', viewValue: 'Web Development' },
-    { value: 'Android-Development', viewValue: 'Android Development' },
-    { value: 'IOS-Development', viewValue: 'IOS Development' }
-  ];
-
-  getCategories() {
-    return this.categories;
-  }
 
   getTeams() {
     return [{teamId: '1', teamName: 'Team Name 1'}]

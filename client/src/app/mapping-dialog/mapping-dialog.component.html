@@ -2,13 +2,22 @@
 <div mat-dialog-content>
   <form class="example-form" (ngSubmit)="onSubmit()">
     <mat-form-field>
-      <input matInput placeholder="Post Title" type="text" required [(ngModel)]="blogPost.title" name="name">
+      <mat-select matInput placeholder="Team name" required [(ngModel)]="channelMapping.category" name="category">
+        <mat-option *ngFor="let team of teams" [value]="team.teamName">
+          {{ team.teamName }}
+        </mat-option>
+      </mat-select>
     </mat-form-field>
     <mat-form-field>
-      <textarea matInput placeholder="Post Body" required [(ngModel)]="blogPost.body" name="body"></textarea>
+      <!-- <textarea matInput placeholder="Post Body" required [(ngModel)]="channelMapping.body" name="body"></textarea> -->
+      <mat-select matInput placeholder="Teams channel name" required [(ngModel)]="channelMapping.category" name="category">
+        <mat-option *ngFor="let channel of teamsChannels" [value]="channel.teamsChannelName">
+          {{ channel.teamsChannelName }}
+        </mat-option>
+      </mat-select>
     </mat-form-field>
     <mat-form-field>
-      <mat-select matInput placeholder="Post Category" required [(ngModel)]="blogPost.category" name="category">
+      <mat-select matInput placeholder="Post Category" required [(ngModel)]="channelMapping.category" name="category">
         <mat-option *ngFor="let cat of categories" [value]="cat.value">
           {{ cat.viewValue }}
         </mat-option>

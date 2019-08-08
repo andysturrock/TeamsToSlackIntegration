@@ -35,4 +35,10 @@ export class MappingDialogComponent {
   }
 
   categories = this.dataService.getCategories();
+
+  teams = this.dataService.getTeams();
+  teamsChannels = this.dataService.getTeamsChannels();
+  workspaces = this.dataService.getWorkspaces();
+  slackChannels = this.dataService.getSlackChannels();
+
 }

@@ -27,6 +27,22 @@ export class DataService {
     return this.categories;
   }
 
+  getTeams() {
+    return [{teamId: '1', teamName: 'Team Name 1'}]
+  }
+  
+  getTeamsChannels() {
+    return [{teamsChannelId: '1.1', teamsChannelName: 'channel 1'}, {teamsChannelId: '1.2', teamsChannelName: 'channel 2'}];
+  }
+
+  getWorkspaces() {
+    return [{workspaceId: 'workspace 1', workspaceName: 'Workspace 1'}];
+  }
+  
+  getSlackChannels() {
+    return [{slackChannelId: '1', slackChannelName: 'channel 1'}, {slackChannelId: '2', slackChannelName: 'channel 2'}];
+  }
+
   constructor() {
   }
 

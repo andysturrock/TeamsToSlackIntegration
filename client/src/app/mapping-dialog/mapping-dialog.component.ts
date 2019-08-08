@@ -1,6 +1,6 @@
-import {Component, EventEmitter, Inject} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
-import {DataService} from '../data/data.service';
+import { Component, EventEmitter, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { DataService } from '../data/data.service';
 
 @Component({
   selector: 'app-mapping-dialog',
@@ -30,7 +30,7 @@ export class MappingDialogComponent {
 
   onSubmit(): void {
     this.channelMapping.position = this.dataService.dataLength();
-    this.event.emit({data: this.channelMapping});
+    this.event.emit({ data: this.channelMapping });
     this.dialogRef.close();
   }
 

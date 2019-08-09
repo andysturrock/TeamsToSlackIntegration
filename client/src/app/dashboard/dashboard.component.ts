@@ -14,7 +14,7 @@ import * as util from 'util';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent {
-  constructor(public auth: GraphService, public dialog: MatDialog, private dataService: DataService) {
+  constructor(public graph: GraphService, public dialog: MatDialog, private dataService: DataService) {
   }
 
   private dataSource = new ChannelMappingDataSource(this.dataService);
@@ -24,11 +24,11 @@ export class DashboardComponent {
   }
 
   displayDeleteButton(element): boolean {
-    return (element && this.auth.getUser() && element.mappingOwner.id == this.auth.getUser().id)
+    return (element && this.graph.getUser() && element.mappingOwner.id == this.graph.getUser().id)
   }
 
   deleteMapping(id) {
-    if (this.auth.isAuthenticated()) {
+    if (this.graph.isAuthenticated()) {
       this.dataService.deleteMapping(id);
       this.dataSource = new ChannelMappingDataSource(this.dataService);
     } else {
@@ -37,7 +37,7 @@ export class DashboardComponent {
   }
 
   getDisplayedColumns() {
-    if(this.auth.isAuthenticated()) {
+    if(this.graph.isAuthenticated()) {
       return ['teams', 'slack', 'owner', 'delete'];
     } else {
       return ['teams', 'slack', 'owner'];

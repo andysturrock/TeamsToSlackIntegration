@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ChannelMapping } from '../channelMapping';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { GraphService } from '../graph/graph.service';
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -9,8 +10,8 @@ const httpOptions = {
 
 @Injectable()
 export class DataService {
-
   constructor(
+    private graphService: GraphService,
     private http: HttpClient) {
   }
 
@@ -33,20 +34,13 @@ export class DataService {
     },
   ];
 
-  async getTeamsAsync(userId): Promise<{id: null, name: null}[]> {
-    try {
-      const url = `${this.teamsUrl}/${userId}`;
-      let response = await this.http.get<{id: null, name: null}[]>(url).toPromise();
-      return response;
-    }
-    catch(error) {
-      return await this.handleErrorAsync<any>(error, `getTeamsAsync id=${userId}`);
-    }
+  async getTeamsAsync(userId: string) {
+    return await this.graphService.getTeamsAsync(userId);
   }
 
-  getTeamsChannels(teamId) {
+  async getTeamsChannelsAsync(teamId) {
     console.error("//TODO - get teams channels from server for team id: " + teamId)
-    return [{ id: '1.1', name: 'channel 1' }, { id: '1.2', name: 'channel 2' }];
+    return await this.graphService.getTeamsChannelsAsync();
   }
 
   getWorkspaces(botId) {
@@ -59,15 +53,28 @@ export class DataService {
     return [{ id: '1', name: 'channel 1' }, { id: '2', name: 'channel 2' }];
   }
 
+   // async getDataAsync(): Promise<ChannelMapping[]> {
+  //   try {
+  //     let response = await this.http.get<ChannelMapping[]>(this.mappingsUrl).toPromise();
+  //     return response;
+  //   }
+  //   catch(error) {
+  //     return await this.handleErrorAsync<any>(error, 'getDataAsync');
+  //   }
+  // }
+
   getData(): Observable<ChannelMapping[]> {
+    // TODO get data from server
     return of<ChannelMapping[]>(this.ELEMENT_DATA);
   }
 
   addMapping(data) {
+    // TODO add data from server
     this.ELEMENT_DATA.push(data);
   }
 
   deleteMapping(index) {
+    // TODO delete data from server
     this.ELEMENT_DATA = [...this.ELEMENT_DATA.slice(0, index), ...this.ELEMENT_DATA.slice(index + 1)];
   }
 

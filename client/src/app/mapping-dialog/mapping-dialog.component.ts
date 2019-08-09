@@ -27,25 +27,30 @@ export class MappingDialogComponent {
     public dialogRef: MatDialogRef<MappingDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dataService: DataService,
-    private authService: GraphService
+    private graphService: GraphService
   ) { }
 
   ngOnInit() {
+    console.error("ngOnInit")
     this.ngOnInitAsync().then();
+    console.error("ngOnInit end")
   }
 
   async ngOnInitAsync() {
-    const user = this.authService.getUser();
+    console.error("ngOnInitAsync")
+    const user = this.graphService.getUser();
     this.channelMapping.mappingOwner = {name: user.displayName, id: user.id};
 
     this.teams = await this.dataService.getTeamsAsync(this.channelMapping.mappingOwner.id);
 
     this.workspaces = this.dataService.getWorkspaces("botId 1");
+
+    console.error("ngOnInitAsync end")
   }
 
   private async onTeamSelectionAsync(e): Promise<void> {
     this.selectedTeam = e.value;
-    this.teamsChannels = await this.dataService.getTeamsChannels(this.selectedTeam.id);
+    this.teamsChannels = await this.dataService.getTeamsChannelsAsync(this.selectedTeam.id);
   }
 
   private async onWorkspaceSelectionAsync(e): Promise<void> {

@@ -7,6 +7,6 @@ import { GraphService } from './graph/graph.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  constructor(public auth: GraphService) {
+  constructor(public graph: GraphService) {
   }
 }

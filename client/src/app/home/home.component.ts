@@ -8,13 +8,13 @@ import { GraphService } from '../graph/graph.service';
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private authService: GraphService) { }
+  constructor(private graphService: GraphService) { }
 
   ngOnInit() {
   }
 
   async signIn(): Promise<void> {
-    await this.authService.signIn();
+    await this.graphService.signIn();
   }
 
 }

@@ -4,13 +4,13 @@
     <div class="container">
       <div fxLayout="column" fxLayoutGap="20px" fxLayout.gt-md="row" fxLayoutAlign="space-around center"
         class="content">
-        <div class="blocks" *ngIf="auth.isAuthenticated()">
+        <div class="blocks" *ngIf="graph.isAuthenticated()">
           <button button="submit" mat-raised-button color="primary" (click)="openDialog()">
             <mat-icon>add</mat-icon> Add Channel Mapping
           </button>
         </div>
         <div class="blocks">
-          <a button mat-raised-button color="primary" (click)="auth.signIn()" *ngIf="!auth.isAuthenticated()">
+          <a button mat-raised-button color="primary" (click)="graph.signIn()" *ngIf="!graph.isAuthenticated()">
             <mat-icon>input</mat-icon>Login to add/edit/delete mappings
           </a>
         </div>

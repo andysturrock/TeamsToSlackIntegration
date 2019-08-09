@@ -10,13 +10,59 @@ import { User } from '../user';
   providedIn: 'root'
 })
 export class GraphService {
-  public authenticated: boolean;
+  private authenticated: boolean;
   private user: User;
+  private graphClient: Client;
 
   constructor(
     private msalService: MsalService) {
     this.authenticated = this.msalService.getUser() != null;
-    this.setUser().then((user) => { this.user = user });
+    this.initGraphAsync().then();
+  }
+
+  private async initGraphAsync() {
+    this.graphClient = Client.init({
+      // Initialize the Graph client with an auth
+      // provider that requests the token from the
+      // auth service
+      authProvider: async (done) => {
+        let token = await this.getAccessToken()
+          .catch((reason) => {
+            done(reason, null);
+          })
+
+        if (token) {
+          done(null, token);
+        } else {
+          done("Could not get an access token", null);
+        }
+      }
+    });
+
+    await this.setUser();
+  }
+
+  async getTeamsAsync(userId) {
+    const joinedTeams = await this.graphClient
+      .api('/me/joinedTeams')
+      .version('beta')
+      .select('id,displayname')
+      .get();
+
+    console.error("joinedTeams.value = " + util.inspect(joinedTeams.value))
+
+    const teams = [];
+    for (let team of joinedTeams.value) {
+      console.error("team = " + util.inspect(team))
+      teams.push({id: team.id, name: team.displayName});
+    }
+
+    console.error("joinedTeams.teams = " + util.inspect(teams))
+    return teams;
+  }
+
+  getTeamsChannelsAsync() {
+    throw new Error("Method not implemented.");
   }
 
   public isAuthenticated(): boolean {
@@ -31,7 +77,8 @@ export class GraphService {
       console.error('Login succeeded', JSON.stringify(result, null, 2));
       if (result) {
         this.authenticated = true;
-        this.user = await this.setUser();
+        await this.initGraphAsync();
+        await this.setUser();
       }
     } catch (error) {
       console.error('Login failed', JSON.stringify(error, null, 2));
@@ -62,33 +109,18 @@ export class GraphService {
   private async setUser(): Promise<User> {
     if (!this.authenticated) return null;
 
-    let graphClient = Client.init({
-      // Initialize the Graph client with an auth
-      // provider that requests the token from the
-      // auth service
-      authProvider: async (done) => {
-        let token = await this.getAccessToken()
-          .catch((reason) => {
-            done(reason, null);
-          })
+    try {
+      // Get the user from Graph (GET /me)
+      let graphUser = await this.graphClient.api('/me').get();
 
-        if (token) {
-          done(null, token);
-        } else {
-          done("Could not get an access token", null);
-        }
-      }
-    });
+      this.user = new User();
+      this.user.displayName = graphUser.displayName;
+      // Prefer the mail property, but fall back to userPrincipalName
+      this.user.email = graphUser.mail || graphUser.userPrincipalName;
+      this.user.id = graphUser.id;
 
-    // Get the user from Graph (GET /me)
-    let graphUser = await graphClient.api('/me').get();
-
-    let user = new User();
-    user.displayName = graphUser.displayName;
-    // Prefer the mail property, but fall back to userPrincipalName
-    user.email = graphUser.mail || graphUser.userPrincipalName;
-    user.id = graphUser.id;
-
-    return user;
+    } catch (error) {
+      console.error("Error setting user: " + util.inspect(error))
+    }
   }
 }

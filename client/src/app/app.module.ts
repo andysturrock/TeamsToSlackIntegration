@@ -24,7 +24,7 @@ import { WelcomeComponent } from './welcome/welcome.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { AppRouters } from './app.routes';
 import { DataService } from './data/data.service';
-import { AuthService } from './auth/auth.service';
+import { GraphService } from './graph/graph.service';
 import { MappingDialogComponent } from './mapping-dialog/mapping-dialog.component';
 import { FormsModule } from '@angular/forms';
 
@@ -74,7 +74,7 @@ library.add(faUserCircle);
     MatInputModule,
     MatSelectModule,
   ],
-  providers: [DataService, AuthService],
+  providers: [DataService, GraphService],
   bootstrap: [AppComponent],
   entryComponents: [
     MappingDialogComponent

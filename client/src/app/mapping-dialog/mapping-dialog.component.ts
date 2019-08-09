@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { DataService } from '../data/data.service';
-import { AuthService } from '../auth/auth.service';
+import { GraphService } from '../graph/graph.service';
 import * as util from 'util';
 import { ChannelMapping } from '../channelMapping';
 import { ChannelMappingDataSource } from '../dashboard/dashboard.component';
@@ -27,7 +27,7 @@ export class MappingDialogComponent {
     public dialogRef: MatDialogRef<MappingDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dataService: DataService,
-    private authService: AuthService
+    private authService: GraphService
   ) { }
 
   ngOnInit() {

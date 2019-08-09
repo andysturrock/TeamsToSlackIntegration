@@ -9,7 +9,7 @@ import { User } from '../user';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class GraphService {
   public authenticated: boolean;
   private user: User;
 

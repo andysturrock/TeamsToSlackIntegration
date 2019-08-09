@@ -3,7 +3,7 @@ import {DataService} from '../data/data.service';
 import {ChannelMapping} from '../channelMapping';
 import {DataSource} from '@angular/cdk/table';
 import {Observable} from 'rxjs/Observable';
-import {AuthService} from '../auth/auth.service';
+import {GraphService} from '../graph/graph.service';
 import {MappingDialogComponent} from '../mapping-dialog/mapping-dialog.component';
 import {MatDialog} from '@angular/material';
 import * as util from 'util';
@@ -14,7 +14,7 @@ import * as util from 'util';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent {
-  constructor(public auth: AuthService, public dialog: MatDialog, private dataService: DataService) {
+  constructor(public auth: GraphService, public dialog: MatDialog, private dataService: DataService) {
   }
 
   private dataSource = new ChannelMappingDataSource(this.dataService);

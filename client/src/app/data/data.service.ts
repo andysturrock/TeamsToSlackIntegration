@@ -7,35 +7,39 @@ export class DataService {
 
   ELEMENT_DATA: ChannelMapping[] = [
     {
-      position: 0, teamId: '1', teamName: 'Team Name 1', teamsChannelId: '1.1', teamsChannelName: 'channel 1',
-      workspaceId: 'workspace 1', workspaceName: 'Workspace 1', slackChannelId: '1', slackChannelName: 'channel 1',
-      mappingOwnerId: '5a85aa45-9606-4698-b599-44697e2cbfcb', mappingOwnerName: 'Andrew Sturrock'
+      team: { id: '1', name: 'Team Name 1' },
+      teamsChannel: { id: '1.1', name: 'channel 1' },
+      workspace: { id: 'workspace 1', name: 'Workspace 1' },
+      slackChannel: { id: '1', name: 'channel 1' },
+      mappingOwner: {id: '5a85aa45-9606-4698-b599-44697e2cbfcb', name: 'Andrew Sturrock'}
     },
     {
-      position: 1, teamId: '1', teamName: 'Team Name 1', teamsChannelId: '1.2', teamsChannelName: 'channel 2',
-      workspaceId: 'workspace 1', workspaceName: 'Workspace 1', slackChannelId: '2', slackChannelName: 'channel 2',
-      mappingOwnerId: '5a85aa45-9606-4698-b599-44697e2cbfcc', mappingOwnerName: 'Dave Richards'
+      team: { id: '2', name: 'Team Name 2' },
+      teamsChannel: { id: '2.1', name: 'channel 1' },
+      workspace: { id: 'workspace_2', name: 'Workspace 2' },
+      slackChannel: { id: '1', name: 'channel 1' },
+      mappingOwner: {id: '5a85aa45-9606-4698-b599-44697e2cbfcc', name: 'Dave Richards'}
     },
   ];
 
   getTeams(userId) {
     console.error("//TODO - get teams from server for user id " + userId)
-    return [{teamId: '1', teamName: 'Team Name 1'}]
+    return [{ id: '1', name: 'Team Name 1' }]
   }
-  
+
   getTeamsChannels(teamId) {
     console.error("//TODO - get teams channels from server for team id: " + teamId)
-    return [{teamsChannelId: '1.1', teamsChannelName: 'channel 1'}, {teamsChannelId: '1.2', teamsChannelName: 'channel 2'}];
+    return [{ id: '1.1', name: 'channel 1' }, { id: '1.2', name: 'channel 2' }];
   }
 
   getWorkspaces(botId) {
     console.error("//TODO - get workspaces from server for bot id " + botId)
-    return [{workspaceId: 'workspace 1', workspaceName: 'Workspace 1'}];
+    return [{ id: 'workspace 1', name: 'Workspace 1' }];
   }
-  
+
   getSlackChannels(workspaceId) {
     console.error("//TODO - get slackworkspaes from server for workspace id " + workspaceId)
-    return [{slackChannelId: '1', slackChannelName: 'channel 1'}, {slackChannelId: '2', slackChannelName: 'channel 2'}];
+    return [{ id: '1', name: 'channel 1' }, { id: '2', name: 'channel 2' }];
   }
 
   constructor() {

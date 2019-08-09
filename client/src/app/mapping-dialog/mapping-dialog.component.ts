@@ -3,6 +3,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { DataService } from '../data/data.service';
 import { AuthService } from '../auth/auth.service';
 import * as util from 'util';
+import { ChannelMapping } from '../channelMapping';
+import { ChannelMappingDataSource } from '../dashboard/dashboard.component';
 
 @Component({
   selector: 'app-mapping-dialog',
@@ -10,60 +12,51 @@ import * as util from 'util';
   styleUrls: ['./mapping-dialog.component.css']
 })
 export class MappingDialogComponent {
-  channelMapping = {
-    position: 0,
-    teamId: '',
-    teamName: '',
-    teamsChannelId: '',
-    teamsChannelName: '',
-    workspaceId: '',
-    workspaceName: '',
-    slackChannelId: '',
-    slackChannelName: '',
-    mappingOwnerId: '',
-    mappingOwnerName: ''
-  };
-  public event: EventEmitter<any> = new EventEmitter();
+  private channelMapping: ChannelMapping = new ChannelMapping();
+  event: EventEmitter<any> = new EventEmitter();
 
-  teams = null;
-  selectedTeam = null;
-  teamsChannels = null;
-  slackToken = null;
-  workspaces = null;
-  selectedWorkspace = null;
-  slackChannels = null;
+  private teams = null;
+  private selectedTeam = null;
+  private teamsChannels = null;
+  private slackToken = null;
+  private workspaces = null;
+  private selectedWorkspace = null;
+  private slackChannels = null;
 
   constructor(
     public dialogRef: MatDialogRef<MappingDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dataService: DataService,
     private authService: AuthService
-  ) {
-    const user = this.authService.getUser();
-    this.channelMapping.mappingOwnerName = user.displayName;
-    this.channelMapping.mappingOwnerId = user.id;
+  ) { }
 
-    this.teams = this.dataService.getTeams(this.channelMapping.mappingOwnerId);
+  ngOnInit() {
+    console.error("MappingDialogComponent.ctor() data = " + util.inspect(this.data))
+
+    const user = this.authService.getUser();
+    this.channelMapping.mappingOwner = {name: user.displayName, id: user.id};
+
+    this.teams = this.dataService.getTeams(this.channelMapping.mappingOwner.id);
 
     this.workspaces = this.dataService.getWorkspaces("botId 1");
   }
 
-  onTeamSelection(e): void {
+  private onTeamSelection(e): void {
     this.selectedTeam = e.value;
-    this.teamsChannels = this.dataService.getTeamsChannels(this.selectedTeam.teamId);
+    this.teamsChannels = this.dataService.getTeamsChannels(this.selectedTeam.id);
   }
 
-  onWorkspaceSelection(e): void {
+  private onWorkspaceSelection(e): void {
     this.selectedWorkspace = e.value;
-    this.slackChannels = this.dataService.getSlackChannels(this.selectedWorkspace.workspaceId);
+    this.slackChannels = this.dataService.getSlackChannels(this.selectedWorkspace.id);
   }
 
-  onNoClick(): void {
+  private onNoClick(): void {
     this.dialogRef.close();
   }
 
-  onSubmit(): void {
-    this.channelMapping.position = this.dataService.dataLength();
+  private onSubmit(): void {
+    // this.channelMapping.position = this.dataService.dataLength();
     this.event.emit({ data: this.channelMapping });
     this.dialogRef.close();
   }

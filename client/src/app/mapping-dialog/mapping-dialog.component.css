@@ -1,9 +1,9 @@
-.example-form {
+.mapping-form {
   display: flex;
   flex-direction: column;
 }
 
-.example-form > * {
+.mapping-form > * {
   width: 100%;
 }
 

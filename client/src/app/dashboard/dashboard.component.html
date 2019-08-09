@@ -28,16 +28,16 @@
               <mat-table #table [dataSource]="getDataSource()">
                 <ng-container matColumnDef="teams">
                   <mat-header-cell *matHeaderCellDef> Teams team/channel </mat-header-cell>
-                  <mat-cell *matCellDef="let element"> {{element.teamName}}/{{element.teamsChannelName}} </mat-cell>
+                  <mat-cell *matCellDef="let element"> {{element.team.name}}/{{element.teamsChannel.name}} </mat-cell>
                 </ng-container>
                 <ng-container matColumnDef="slack">
                   <mat-header-cell *matHeaderCellDef> Slack workspace/channel </mat-header-cell>
-                  <mat-cell *matCellDef="let element"> {{element.workspaceName}}/{{element.slackChannelName}}
+                  <mat-cell *matCellDef="let element"> {{element.workspace.name}}/{{element.slackChannel.name}}
                   </mat-cell>
                 </ng-container>
                 <ng-container matColumnDef="owner">
                   <mat-header-cell *matHeaderCellDef> Mapping Owner </mat-header-cell>
-                  <mat-cell *matCellDef="let element"> {{element.mappingOwnerName}} </mat-cell>
+                  <mat-cell *matCellDef="let element"> {{element.mappingOwner.name}} </mat-cell>
                 </ng-container>
 
                 <ng-container matColumnDef="delete">

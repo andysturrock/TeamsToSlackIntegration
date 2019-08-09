@@ -24,7 +24,7 @@ export class DashboardComponent {
   }
 
   displayDeleteButton(element): boolean {
-    return (element && this.auth.getUser() && element.mappingOwnerId == this.auth.getUser().id)
+    return (element && this.auth.getUser() && element.mappingOwner.id == this.auth.getUser().id)
   }
 
   deleteMapping(id) {

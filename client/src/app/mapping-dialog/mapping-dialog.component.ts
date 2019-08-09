@@ -17,12 +17,14 @@ export class MappingDialogComponent {
   event: EventEmitter<any> = new EventEmitter();
 
   private teams = null;
-  private selectedTeam = null;
+  // private selectedTeam = null;
   private teamsChannels = null;
   private slackToken = null;
   private workspaces = null;
   private selectedWorkspace = null;
   private slackChannels = null;
+  private enableSave = false;
+  private slackBotToken = null;
 
   constructor(
     public dialogRef: MatDialogRef<MappingDialogComponent>,
@@ -44,19 +46,21 @@ export class MappingDialogComponent {
 
     this.teams = await this.dataService.getTeamsAsync(this.channelMapping.mappingOwner.id);
 
-    this.workspaces = this.dataService.getWorkspaces("botId 1");
-
     console.error("ngOnInitAsync end")
   }
 
   private async onTeamSelectionAsync(e): Promise<void> {
-    this.selectedTeam = e.value;
-    this.teamsChannels = await this.dataService.getTeamsChannelsAsync(this.selectedTeam.id);
+    this.teamsChannels = null;
+    // this.selectedTeam = e.value;
+    this.teamsChannels = await this.dataService.getTeamsChannelsAsync(e.value.id);
   }
 
   private async onWorkspaceSelectionAsync(e): Promise<void> {
-    this.selectedWorkspace = e.value;
-    this.slackChannels = await this.dataService.getSlackChannels(this.selectedWorkspace.id);
+    this.slackChannels = await this.dataService.getSlackChannels(e.value.id);
+  }
+
+  private async loadSlackWorkspaces() {
+    this.workspaces = this.dataService.getWorkspaces("botId 1");
   }
 
   private onNoClick(): void {

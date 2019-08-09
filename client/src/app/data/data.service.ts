@@ -39,8 +39,7 @@ export class DataService {
   }
 
   async getTeamsChannelsAsync(teamId) {
-    console.error("//TODO - get teams channels from server for team id: " + teamId)
-    return await this.graphService.getTeamsChannelsAsync();
+    return await this.graphService.getTeamsChannelsAsync(teamId);
   }
 
   getWorkspaces(botId) {

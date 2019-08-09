@@ -43,26 +43,34 @@ export class GraphService {
   }
 
   async getTeamsAsync(userId) {
+    // Note that userId is unused because we use the
+    // /me version of the API.  So it just returns
+    // the Teams that the logged in users is a member of.
     const joinedTeams = await this.graphClient
       .api('/me/joinedTeams')
       .version('beta')
       .select('id,displayname')
       .get();
 
-    console.error("joinedTeams.value = " + util.inspect(joinedTeams.value))
-
     const teams = [];
     for (let team of joinedTeams.value) {
-      console.error("team = " + util.inspect(team))
       teams.push({id: team.id, name: team.displayName});
     }
-
-    console.error("joinedTeams.teams = " + util.inspect(teams))
     return teams;
   }
 
-  getTeamsChannelsAsync() {
-    throw new Error("Method not implemented.");
+  async getTeamsChannelsAsync(teamId) {
+    const channels = await this.graphClient
+    .api(`/teams/${teamId}/channels`)
+    .version('beta')
+    .select('id,displayname')
+    .get();
+
+    const teamsChannels = [];
+    for (let channel of channels.value) {
+      teamsChannels.push({id: channel.id, name: channel.displayName})
+    }
+    return teamsChannels;
   }
 
   public isAuthenticated(): boolean {

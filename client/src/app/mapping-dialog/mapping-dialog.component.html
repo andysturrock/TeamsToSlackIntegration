@@ -1,15 +1,22 @@
 <h1 mat-dialog-title>{{data}}</h1>
 <div mat-dialog-content>
   <form class="mapping-form" (ngSubmit)="onSubmit()">
-    <mat-form-field *ngIf="teams">
-      <mat-select matInput placeholder="Team name" required [(ngModel)]="channelMapping.team" name="teamName"
-        (selectionChange)="onTeamSelectionAsync($event)">
-        <mat-option *ngFor="let team of teams" [value]="team">
-          {{ team.name }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field *ngIf="selectedTeam">
+    <div *ngIf="teams; then selectTeam; else loadTeams"></div>
+    <ng-template #selectTeam>
+      <mat-form-field>
+        <mat-select matInput placeholder="Team name" required [(ngModel)]="channelMapping.team" name="teamName"
+          (selectionChange)="onTeamSelectionAsync($event)">
+          <mat-option *ngFor="let team of teams" [value]="team">
+            {{ team.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </ng-template>
+    <ng-template #loadTeams>
+      <mat-label *ngIf="!teams">Loading teams...</mat-label>
+    </ng-template>
+
+    <mat-form-field *ngIf="teams && teamsChannels">
       <mat-select matInput placeholder="Teams channel name" required [(ngModel)]="channelMapping.teamsChannel"
         name="teamsChannelName">
         <mat-option *ngFor="let channel of teamsChannels" [value]="channel">
@@ -17,7 +24,15 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-form-field>
+    <mat-label *ngIf="channelMapping.team.id && !teamsChannels">Loading Channels in {{channelMapping.team.name}}...
+    </mat-label>
+
+    <mat-form-field *ngIf="!workspaces">
+      <input matInput required placeholder="Slack Bot Token" value="xorb-...." [(ngModel)]="slackBotToken" name="botToken">
+      <button mat-raised-button type="submit" color="primary" (click)="loadSlackWorkspaces()">Load Workspaces</button>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="workspaces">
       <mat-select matInput placeholder="Slack workspace" required [(ngModel)]="channelMapping.workspace"
         name="workspaceName" (selectionChange)="onWorkspaceSelectionAsync($event)">
         <mat-option *ngFor="let workspace of workspaces" [value]="workspace">
@@ -34,7 +49,7 @@
       </mat-select>
     </mat-form-field>
 
-    <button mat-raised-button type="submit" color="primary">Save</button>
+    <button mat-raised-button type="submit" *ngIf="enableSave" color="primary">Save</button>
   </form>
 </div>
 <div mat-dialog-actions>

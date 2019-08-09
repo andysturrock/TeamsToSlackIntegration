@@ -26,7 +26,7 @@ export class GraphService {
       // provider that requests the token from the
       // auth service
       authProvider: async (done) => {
-        let token = await this.getAccessToken()
+        let token = await this.getAccessTokenAsync()
           .catch((reason) => {
             done(reason, null);
           })
@@ -93,7 +93,7 @@ export class GraphService {
   }
 
   // Silently request an access token
-  async getAccessToken(): Promise<string> {
+  async getAccessTokenAsync(): Promise<string> {
     let result = await this.msalService.acquireTokenSilent(OAuthSettings.scopes)
       .catch((reason) => {
         console.error('Get token failed', JSON.stringify(reason, null, 2));
@@ -103,6 +103,13 @@ export class GraphService {
   }
 
   public getUser(): User {
+    return this.user;
+  }
+
+  public async getUserAsync(): Promise<User> {
+    if(!this.user) {
+      await this.setUser();
+    }
     return this.user;
   }
 

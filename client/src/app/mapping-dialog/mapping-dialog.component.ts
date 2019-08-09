@@ -5,6 +5,7 @@ import { GraphService } from '../graph/graph.service';
 import * as util from 'util';
 import { ChannelMapping } from '../channelMapping';
 import { ChannelMappingDataSource } from '../dashboard/dashboard.component';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-mapping-dialog',
@@ -38,7 +39,7 @@ export class MappingDialogComponent {
 
   async ngOnInitAsync() {
     console.error("ngOnInitAsync")
-    const user = this.graphService.getUser();
+    const user = await this.graphService.getUserAsync();
     this.channelMapping.mappingOwner = {name: user.displayName, id: user.id};
 
     this.teams = await this.dataService.getTeamsAsync(this.channelMapping.mappingOwner.id);

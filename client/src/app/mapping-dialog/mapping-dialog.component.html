@@ -1,7 +1,7 @@
 <h1 mat-dialog-title>{{data}}</h1>
 <div mat-dialog-content>
   <form class="mapping-form" (ngSubmit)="onSubmit()">
-    <mat-form-field>
+    <mat-form-field *ngIf="teams">
       <mat-select matInput placeholder="Team name" required [(ngModel)]="channelMapping.team" name="teamName"
         (selectionChange)="onTeamSelectionAsync($event)">
         <mat-option *ngFor="let team of teams" [value]="team">

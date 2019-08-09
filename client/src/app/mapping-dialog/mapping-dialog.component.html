@@ -3,7 +3,7 @@
   <form class="mapping-form" (ngSubmit)="onSubmit()">
     <mat-form-field>
       <mat-select matInput placeholder="Team name" required [(ngModel)]="channelMapping.team" name="teamName"
-        (selectionChange)="onTeamSelection($event)">
+        (selectionChange)="onTeamSelectionAsync($event)">
         <mat-option *ngFor="let team of teams" [value]="team">
           {{ team.name }}
         </mat-option>
@@ -19,7 +19,7 @@
     </mat-form-field>
     <mat-form-field>
       <mat-select matInput placeholder="Slack workspace" required [(ngModel)]="channelMapping.workspace"
-        name="workspaceName" (selectionChange)="onWorkspaceSelection($event)">
+        name="workspaceName" (selectionChange)="onWorkspaceSelectionAsync($event)">
         <mat-option *ngFor="let workspace of workspaces" [value]="workspace">
           {{ workspace.name }}
         </mat-option>

@@ -31,24 +31,26 @@ export class MappingDialogComponent {
   ) { }
 
   ngOnInit() {
-    console.error("MappingDialogComponent.ctor() data = " + util.inspect(this.data))
+    this.ngOnInitAsync().then();
+  }
 
+  async ngOnInitAsync() {
     const user = this.authService.getUser();
     this.channelMapping.mappingOwner = {name: user.displayName, id: user.id};
 
-    this.teams = this.dataService.getTeams(this.channelMapping.mappingOwner.id);
+    this.teams = await this.dataService.getTeamsAsync(this.channelMapping.mappingOwner.id);
 
     this.workspaces = this.dataService.getWorkspaces("botId 1");
   }
 
-  private onTeamSelection(e): void {
+  private async onTeamSelectionAsync(e): Promise<void> {
     this.selectedTeam = e.value;
-    this.teamsChannels = this.dataService.getTeamsChannels(this.selectedTeam.id);
+    this.teamsChannels = await this.dataService.getTeamsChannels(this.selectedTeam.id);
   }
 
-  private onWorkspaceSelection(e): void {
+  private async onWorkspaceSelectionAsync(e): Promise<void> {
     this.selectedWorkspace = e.value;
-    this.slackChannels = this.dataService.getSlackChannels(this.selectedWorkspace.id);
+    this.slackChannels = await this.dataService.getSlackChannels(this.selectedWorkspace.id);
   }
 
   private onNoClick(): void {

@@ -10,12 +10,12 @@ const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
 };
 
+// This class doesn't do much.  It's just a facade over the various API services.
 @Injectable()
 export class DataService {
   constructor(
     private graphService: GraphService,
-    private slackWebApiService: SlackWebApiService,
-    private http: HttpClient) {
+    private slackWebApiService: SlackWebApiService,) {
   }
 
   private teamsUrl = 'api/teams'
@@ -57,23 +57,13 @@ export class DataService {
     return await this.slackWebApiService.getSlackChannelsAsync(botToken);
   }
 
-   // async getDataAsync(): Promise<ChannelMapping[]> {
-  //   try {
-  //     let response = await this.http.get<ChannelMapping[]>(this.mappingsUrl).toPromise();
-  //     return response;
-  //   }
-  //   catch(error) {
-  //     return await this.handleErrorAsync<any>(error, 'getDataAsync');
-  //   }
-  // }
-
   getData(): Observable<ChannelMapping[]> {
     // TODO get data from server
     return of<ChannelMapping[]>(this.ELEMENT_DATA);
   }
 
   addMapping(data) {
-    // TODO add data from server
+    // TODO add data to server
     this.ELEMENT_DATA.push(data);
   }
 
@@ -84,14 +74,5 @@ export class DataService {
 
   dataLength() {
     return this.ELEMENT_DATA.length;
-  }
-
-  private async handleErrorAsync<T> (error: any, operation = 'operation', result?: T) {
-      
-    // TODO: send the error to remote logging infrastructure
-    console.error(error); // log to console instead
-    
-    // Let the app keep running by returning an empty result.
-    return (result as T);
   }
 }

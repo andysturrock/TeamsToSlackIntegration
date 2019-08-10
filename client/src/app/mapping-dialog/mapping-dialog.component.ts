@@ -17,11 +17,7 @@ export class MappingDialogComponent {
 
   private teams = null;
   private teamsChannels = null;
-  private slackToken = null;
-  private workspace = null;
-  private selectedWorkspace = null;
   private slackChannels = null;
-  // private enableSubmit = false;
   private slackBotToken = null;
 
   constructor(

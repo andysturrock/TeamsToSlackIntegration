@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { DataService } from '../data/data.service';
-import { GraphService } from '../graph/graph.service';
 import * as util from 'util';
 import { ChannelMapping } from '../channelMapping';
 import { ChannelMappingDataSource } from '../dashboard/dashboard.component';
@@ -17,10 +16,9 @@ export class MappingDialogComponent {
   event: EventEmitter<any> = new EventEmitter();
 
   private teams = null;
-  // private selectedTeam = null;
   private teamsChannels = null;
   private slackToken = null;
-  private workspaces = null;
+  private workspace = null;
   private selectedWorkspace = null;
   private slackChannels = null;
   private enableSave = false;
@@ -29,8 +27,7 @@ export class MappingDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<MappingDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    public dataService: DataService,
-    private graphService: GraphService
+    public dataService: DataService
   ) { }
 
   ngOnInit() {
@@ -41,7 +38,7 @@ export class MappingDialogComponent {
 
   async ngOnInitAsync() {
     console.error("ngOnInitAsync")
-    const user = await this.graphService.getUserAsync();
+    const user = await this.dataService.getUserAsync();
     this.channelMapping.mappingOwner = {name: user.displayName, id: user.id};
 
     this.teams = await this.dataService.getTeamsAsync(this.channelMapping.mappingOwner.id);
@@ -51,7 +48,6 @@ export class MappingDialogComponent {
 
   private async onTeamSelectionAsync(e): Promise<void> {
     this.teamsChannels = null;
-    // this.selectedTeam = e.value;
     this.teamsChannels = await this.dataService.getTeamsChannelsAsync(e.value.id);
   }
 
@@ -59,8 +55,9 @@ export class MappingDialogComponent {
     this.slackChannels = await this.dataService.getSlackChannels(e.value.id);
   }
 
-  private async loadSlackWorkspaces() {
-    this.workspaces = this.dataService.getWorkspaces("botId 1");
+  private async getWorkspaceAsync() {
+    this.channelMapping.workspace = await this.dataService.getWorkspaceAsync(this.slackBotToken);
+    console.error("getWorkspaceAsync() channelMapping.workspace = " + util.inspect(this.channelMapping.workspace))
   }
 
   private onNoClick(): void {

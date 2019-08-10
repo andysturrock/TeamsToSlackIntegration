@@ -3,6 +3,8 @@ import { ChannelMapping } from '../channelMapping';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { GraphService } from '../graph/graph.service';
+import { SlackWebApiService } from '../slack-web-api/slack-web-api.service';
+import * as util from 'util';
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -12,6 +14,7 @@ const httpOptions = {
 export class DataService {
   constructor(
     private graphService: GraphService,
+    private slackWebApiService: SlackWebApiService,
     private http: HttpClient) {
   }
 
@@ -34,6 +37,10 @@ export class DataService {
     },
   ];
 
+  async getUserAsync() {
+    return await this.graphService.getUserAsync()
+  }
+
   async getTeamsAsync(userId: string) {
     return await this.graphService.getTeamsAsync(userId);
   }
@@ -42,9 +49,11 @@ export class DataService {
     return await this.graphService.getTeamsChannelsAsync(teamId);
   }
 
-  getWorkspaces(botId) {
-    console.error("//TODO - get workspaces from server for bot id " + botId)
-    return [{ id: 'workspace 1', name: 'Workspace 1' }];
+  async getWorkspaceAsync(botToken) {
+    let cock = await this.slackWebApiService.getWorkspaceAsync(botToken);
+    console.error("dataservice getWorkspaceAsync found: " + util.inspect(cock))
+    return cock;
+    // return await this.slackWebApiService.getWorkspaceAsync(botToken)
   }
 
   getSlackChannels(workspaceId) {

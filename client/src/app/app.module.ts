@@ -25,9 +25,9 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { AppRouters } from './app.routes';
 import { DataService } from './data/data.service';
 import { GraphService } from './graph/graph.service';
+import { SlackWebApiService } from './slack-web-api/slack-web-api.service'
 import { MappingDialogComponent } from './mapping-dialog/mapping-dialog.component';
 import { FormsModule } from '@angular/forms';
-
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -72,9 +72,9 @@ library.add(faUserCircle);
     MatTableModule,
     MatDialogModule,
     MatInputModule,
-    MatSelectModule,
+    MatSelectModule
   ],
-  providers: [DataService, GraphService],
+  providers: [DataService, GraphService, SlackWebApiService],
   bootstrap: [AppComponent],
   entryComponents: [
     MappingDialogComponent

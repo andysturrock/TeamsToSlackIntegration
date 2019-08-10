@@ -4,6 +4,7 @@
     <div *ngIf="teams; then selectTeam; else loadTeams"></div>
     <ng-template #selectTeam>
       <mat-form-field>
+        <mat-label>Teams team name</mat-label>
         <mat-select matInput placeholder="Team name" required [(ngModel)]="channelMapping.team" name="teamName"
           (selectionChange)="onTeamSelectionAsync($event)">
           <mat-option *ngFor="let team of teams" [value]="team">
@@ -17,6 +18,7 @@
     </ng-template>
 
     <mat-form-field *ngIf="teams && teamsChannels">
+      <mat-label>Teams channel name</mat-label>
       <mat-select matInput placeholder="Teams channel name" required [(ngModel)]="channelMapping.teamsChannel"
         name="teamsChannelName">
         <mat-option *ngFor="let channel of teamsChannels" [value]="channel">
@@ -27,20 +29,17 @@
     <mat-label *ngIf="channelMapping.team.id && !teamsChannels">Loading Channels in {{channelMapping.team.name}}...
     </mat-label>
 
-    <mat-form-field *ngIf="!workspaces">
-      <input matInput required placeholder="Slack Bot Token" value="xorb-...." [(ngModel)]="slackBotToken" name="botToken">
-      <button mat-raised-button type="submit" color="primary" (click)="loadSlackWorkspaces()">Load Workspaces</button>
+    <mat-form-field>
+      <input name="botToken" matInput type="search" placeholder="Slack Bot Token" class="search-input"
+        [(ngModel)]="slackBotToken">
+      <mat-icon matSuffix (click)="getWorkspaceAsync()">search</mat-icon>
     </mat-form-field>
 
-    <mat-form-field *ngIf="workspaces">
-      <mat-select matInput placeholder="Slack workspace" required [(ngModel)]="channelMapping.workspace"
-        name="workspaceName" (selectionChange)="onWorkspaceSelectionAsync($event)">
-        <mat-option *ngFor="let workspace of workspaces" [value]="workspace">
-          {{ workspace.name }}
-        </mat-option>
-      </mat-select>
+    <mat-form-field *ngIf="channelMapping.workspace.id">
+      <mat-label>Slack workspace name</mat-label>
+      <input name="workspaceName" readonly matInput value="{{channelMapping.workspace.name}}">
     </mat-form-field>
-    <mat-form-field *ngIf="selectedWorkspace">
+    <mat-form-field *ngIf="channelMapping.workspace.id">
       <mat-select matInput placeholder="Slack channel name" required [(ngModel)]="channelMapping.slackChannel"
         name="slackChannelName">
         <mat-option *ngFor="let channel of slackChannels" [value]="channel">

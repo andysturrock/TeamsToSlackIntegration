@@ -50,7 +50,7 @@ export class DashboardComponent {
       data: 'Add Mapping'
     });
     dialogRef.componentInstance.event.subscribe((result) => {
-      this.dataService.addMapping(result.data);
+      this.dataService.addMappingAsync(result.data);
       this.dataSource = new ChannelMappingDataSource(this.dataService);
     });
   }

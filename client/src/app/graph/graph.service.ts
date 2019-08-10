@@ -13,6 +13,7 @@ export class GraphService {
   private authenticated: boolean;
   private user: User;
   private graphClient: Client;
+  private accessToken: string;
 
   constructor(
     private msalService: MsalService) {
@@ -32,6 +33,7 @@ export class GraphService {
           })
 
         if (token) {
+          this.accessToken = token;
           done(null, token);
         } else {
           done("Could not get an access token", null);
@@ -82,7 +84,6 @@ export class GraphService {
   async signIn(): Promise<void> {
     try {
       const result = await this.msalService.loginPopup(OAuthSettings.scopes);
-      console.error('Login succeeded', JSON.stringify(result, null, 2));
       if (result) {
         this.authenticated = true;
         await this.initGraphAsync();
@@ -129,6 +130,8 @@ export class GraphService {
       let graphUser = await this.graphClient.api('/me').get();
 
       this.user = new User();
+      this.user.token = this.accessToken;
+      console.error("accessToken = " + this.accessToken);
       this.user.displayName = graphUser.displayName;
       // Prefer the mail property, but fall back to userPrincipalName
       this.user.email = graphUser.mail || graphUser.userPrincipalName;

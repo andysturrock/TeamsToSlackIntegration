@@ -26,6 +26,7 @@ import { AppRouters } from './app.routes';
 import { DataService } from './data/data.service';
 import { GraphService } from './graph/graph.service';
 import { SlackWebApiService } from './slack-web-api/slack-web-api.service'
+import { ServerApiService } from './server-api/server-api.service';
 import { MappingDialogComponent } from './mapping-dialog/mapping-dialog.component';
 import { FormsModule } from '@angular/forms';
 
@@ -74,7 +75,7 @@ library.add(faUserCircle);
     MatInputModule,
     MatSelectModule
   ],
-  providers: [DataService, GraphService, SlackWebApiService],
+  providers: [DataService, GraphService, SlackWebApiService, ServerApiService],
   bootstrap: [AppComponent],
   entryComponents: [
     MappingDialogComponent

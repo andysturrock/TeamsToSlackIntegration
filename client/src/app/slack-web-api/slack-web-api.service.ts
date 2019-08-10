@@ -9,7 +9,6 @@ const httpOptions = {
 
 @Injectable()
 export class SlackWebApiService {
-  private webClient;
 
   constructor(private http: HttpClient) {
   }
@@ -29,6 +28,8 @@ export class SlackWebApiService {
   async getSlackChannelsAsync(botToken: string) {
     try {
       // TODO need to paginate if more than 1000 channels in a workspace.  Unlikely but could happen.
+      // It's annoying we can't use the Slack sdk in Angular (it needs the "process" module which doesn't work in the browser)
+      // as that takes care of pagination for you.
       let params = new HttpParams().set('token', botToken).set('exclude_archived', 'true').set('limit', '1000')
       httpOptions.params = params;
       let response = await this.http.get<any>('https://slack.com/api/conversations.list', httpOptions).toPromise();

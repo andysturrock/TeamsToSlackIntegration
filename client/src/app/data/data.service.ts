@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { GraphService } from '../graph/graph.service';
 import { SlackWebApiService } from '../slack-web-api/slack-web-api.service';
+import { ServerApiService } from '../server-api/server-api.service';
 import * as util from 'util';
 
 const httpOptions = {
@@ -15,25 +16,27 @@ const httpOptions = {
 export class DataService {
   constructor(
     private graphService: GraphService,
-    private slackWebApiService: SlackWebApiService,) {
+    private slackWebApiService: SlackWebApiService,
+    private serverApiService: ServerApiService,
+    ) {
   }
 
   private teamsUrl = 'api/teams'
 
-  ELEMENT_DATA: ChannelMapping[] = [
+  private ELEMENT_DATA: ChannelMapping[] = [
     {
       team: { id: '1', name: 'Team Name 1' },
       teamsChannel: { id: '1.1', name: 'channel 1' },
       workspace: { id: 'workspace 1', name: 'Workspace 1' },
       slackChannel: { id: '1', name: 'channel 1' },
-      mappingOwner: { id: '5a85aa45-9606-4698-b599-44697e2cbfcb', name: 'Andrew Sturrock' }
+      mappingOwner: { id: '5a85aa45-9606-4698-b599-44697e2cbfcb', name: 'Andrew Sturrock', token: '123' }
     },
     {
       team: { id: '2', name: 'Team Name 2' },
       teamsChannel: { id: '2.1', name: 'channel 1' },
       workspace: { id: 'workspace_2', name: 'Workspace 2' },
       slackChannel: { id: '1', name: 'channel 1' },
-      mappingOwner: { id: '5a85aa45-9606-4698-b599-44697e2cbfcc', name: 'Dave Richards' }
+      mappingOwner: { id: '5a85aa45-9606-4698-b599-44697e2cbfcc', name: 'Dave Richards', token: '456' }
     },
   ];
 
@@ -62,9 +65,8 @@ export class DataService {
     return of<ChannelMapping[]>(this.ELEMENT_DATA);
   }
 
-  addMapping(data) {
-    // TODO add data to server
-    this.ELEMENT_DATA.push(data);
+  async addMappingAsync(data) {
+    await this.serverApiService.postMappingAsync(data)
   }
 
   deleteMapping(index) {

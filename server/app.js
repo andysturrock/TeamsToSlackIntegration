@@ -3,10 +3,6 @@ require('dotenv').config();
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const RedisStore = require('connect-redis')(session);
-const flash = require('connect-flash');
 const util = require('util')
 const logger = require('pino')()
 const pino = require('express-pino-logger')()
@@ -14,55 +10,14 @@ const pino = require('express-pino-logger')()
 const configuredPassport = require('./oauth/passport')
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
-const teamsRouter = require('./routes/teams');
-const messagesRouter = require('./routes/messages');
+const mappingsRouter = require('./routes/mappings');
 
 const app = express();
 app.use(pino)
 
-// Session middleware
-app.use(session({
-    store: new RedisStore(),
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: false
-}));
-
-// Flash middleware
-app.use(flash());
-
-// Set up local vars for template layout
-app.use(function (req, res, next) {
-    // Read any flashed errors and save
-    // in the response locals
-    res.locals.error = req.flash('error_msg');
-
-    // Check for simple error string and
-    // convert to layout's expected format
-    const errs = req.flash('error');
-    for (let i in errs) {
-        res.locals.error.push({ message: 'An error occurred', debug: errs[i] });
-    }
-
-    next();
-});
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
-
-const hbs = require('hbs');
-const moment = require('moment');
-// Helper to format date/time sent by Graph
-hbs.registerHelper('eventDateTime', function (dateTime) {
-    return moment(dateTime).format('M/D/YY h:mm A');
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize passport
@@ -78,11 +33,14 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.use(function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
+    next();
+});
+
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/auth', authRouter);
-app.use('/teams', teamsRouter);
-app.use('/messages', messagesRouter);
+app.use('/mappings', mappingsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -96,8 +54,7 @@ app.use(function (err, req, res, next) {
     res.locals.error = req.app.get('env') === 'development' ? err : {};
 
     // render the error page
-    res.status(err.status || 500);
-    res.render('error');
+    res.sendStatus(err.status || 500);
 });
 
 const oauth2 = require('./oauth/oauth.js')
@@ -118,6 +75,6 @@ const checkForMessagesWithoutUserLogon = async () => {
     }
 }
 
-setInterval(checkForMessagesWithoutUserLogon, 5000);
+//setInterval(checkForMessagesWithoutUserLogon, 5000);
 
 module.exports = app;

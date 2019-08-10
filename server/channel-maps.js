@@ -111,5 +111,9 @@ module.exports = {
 
     addMessageIdAsync: async function (teamId, teamsChannelId, messageId) {
         await saddAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId), messageId)
+    },
+
+    saveMapAsync: async function(channelMapping) {
+        await setAsync('Mapping/' + JSON.stringify(channelMapping))
     }
 };

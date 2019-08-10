@@ -51,13 +51,9 @@ export class MappingDialogComponent {
     this.teamsChannels = await this.dataService.getTeamsChannelsAsync(e.value.id);
   }
 
-  private async onWorkspaceSelectionAsync(e): Promise<void> {
-    this.slackChannels = await this.dataService.getSlackChannels(e.value.id);
-  }
-
-  private async getWorkspaceAsync() {
+  private async onWorkspaceSearch() {
     this.channelMapping.workspace = await this.dataService.getWorkspaceAsync(this.slackBotToken);
-    console.error("getWorkspaceAsync() channelMapping.workspace = " + util.inspect(this.channelMapping.workspace))
+    this.slackChannels = await this.dataService.getSlackChannels(this.slackBotToken)
   }
 
   private onNoClick(): void {

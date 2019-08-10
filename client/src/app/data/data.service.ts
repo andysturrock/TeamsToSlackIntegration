@@ -50,15 +50,11 @@ export class DataService {
   }
 
   async getWorkspaceAsync(botToken) {
-    let cock = await this.slackWebApiService.getWorkspaceAsync(botToken);
-    console.error("dataservice getWorkspaceAsync found: " + util.inspect(cock))
-    return cock;
-    // return await this.slackWebApiService.getWorkspaceAsync(botToken)
+    return await this.slackWebApiService.getWorkspaceAsync(botToken);
   }
 
-  getSlackChannels(workspaceId) {
-    console.error("//TODO - get slackworkspaes from server for workspace id " + workspaceId)
-    return [{ id: '1', name: 'channel 1' }, { id: '2', name: 'channel 2' }];
+  async getSlackChannels(botToken) {
+    return await this.slackWebApiService.getSlackChannelsAsync(botToken);
   }
 
    // async getDataAsync(): Promise<ChannelMapping[]> {

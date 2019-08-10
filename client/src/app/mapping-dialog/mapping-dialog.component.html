@@ -32,7 +32,7 @@
     <mat-form-field>
       <input name="botToken" matInput type="search" placeholder="Slack Bot Token" class="search-input"
         [(ngModel)]="slackBotToken">
-      <mat-icon matSuffix (click)="getWorkspaceAsync()">search</mat-icon>
+      <mat-icon matSuffix (click)="onWorkspaceSearch()">search</mat-icon>
     </mat-form-field>
 
     <mat-form-field *ngIf="channelMapping.workspace.id">

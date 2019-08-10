@@ -9,7 +9,6 @@ const httpOptions = {
 
 @Injectable()
 export class SlackWebApiService {
-
   private webClient;
 
   constructor(private http: HttpClient) {
@@ -17,15 +16,34 @@ export class SlackWebApiService {
 
   async getWorkspaceAsync(botToken: string) {
     try {
-      let params = new HttpParams().set("token", botToken)
+      let params = new HttpParams().set('token', botToken)
       httpOptions.params = params;
       let response = await this.http.get<any>('https://slack.com/api/team.info', httpOptions).toPromise();
-      console.error("getWorkspace() returning: " + util.inspect(response))
-      console.error("getWorkspace() response.team.id: " + util.inspect(response.team.id))
-      return {id: response.team.id, name: response.team.name};
+      return { id: response.team.id, name: response.team.name };
     }
     catch (error) {
-      console.error("getWorkspace() error: " + util.inspect(error))
+      console.error("getWorkspaceAsync() error: " + util.inspect(error))
+    }
+  }
+
+  async getSlackChannelsAsync(botToken: string) {
+    try {
+      // TODO need to paginate if more than 1000 channels in a workspace.  Unlikely but could happen.
+      let params = new HttpParams().set('token', botToken).set('exclude_archived', 'true').set('limit', '1000')
+      httpOptions.params = params;
+      let response = await this.http.get<any>('https://slack.com/api/conversations.list', httpOptions).toPromise();
+      console.error("getSlackChannelsAsync() found: " + util.inspect(response))
+      const channels = [];
+      for(let channel of response.channels) {
+        if(channel.is_member) {
+          channels.push({id: channel.id, name: channel.name});
+        }
+      }
+      console.error("getSlackChannelsAsync() returning: " + util.inspect(channels))
+      return channels;
+    }
+    catch (error) {
+      console.error("getSlackChannelsAsync() error: " + util.inspect(error))
     }
   }
 }

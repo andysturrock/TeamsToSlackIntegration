@@ -21,7 +21,7 @@ export class MappingDialogComponent {
   private workspace = null;
   private selectedWorkspace = null;
   private slackChannels = null;
-  private enableSave = false;
+  // private enableSubmit = false;
   private slackBotToken = null;
 
   constructor(
@@ -31,29 +31,30 @@ export class MappingDialogComponent {
   ) { }
 
   ngOnInit() {
-    console.error("ngOnInit")
     this.ngOnInitAsync().then();
-    console.error("ngOnInit end")
   }
 
   async ngOnInitAsync() {
-    console.error("ngOnInitAsync")
     const user = await this.dataService.getUserAsync();
-    this.channelMapping.mappingOwner = {name: user.displayName, id: user.id};
-
+    this.channelMapping.mappingOwner = { name: user.displayName, id: user.id };
     this.teams = await this.dataService.getTeamsAsync(this.channelMapping.mappingOwner.id);
-
-    console.error("ngOnInitAsync end")
   }
 
   private async onTeamSelectionAsync(e): Promise<void> {
-    this.teamsChannels = null;
     this.teamsChannels = await this.dataService.getTeamsChannelsAsync(e.value.id);
   }
 
   private async onWorkspaceSearch() {
     this.channelMapping.workspace = await this.dataService.getWorkspaceAsync(this.slackBotToken);
     this.slackChannels = await this.dataService.getSlackChannels(this.slackBotToken)
+  }
+
+  private enableSubmit() {
+    return this.channelMapping.team.id &&
+      this.channelMapping.teamsChannel.id &&
+      this.channelMapping.workspace.id &&
+      this.channelMapping.slackChannel.id &&
+      this.channelMapping.mappingOwner.id;
   }
 
   private onNoClick(): void {

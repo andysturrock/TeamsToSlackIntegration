@@ -20,7 +20,7 @@ router.get('/',
       try {
         accessToken = await tokens.getAccessTokenAsync(req);
       } catch (err) {
-        req.flash('error_msg', {
+        req.json({
           message: 'Could not get access token. Try signing out and signing in again.',
           debug: JSON.stringify(err)
         });
@@ -32,14 +32,12 @@ router.get('/',
           logger.debug("teamsAndChannels:" + util.inspect(teamsAndChannels))
           params.teamsAndChannels = teamsAndChannels;
         } catch (err) {
-          req.flash('error_msg', {
+          req.json({
             message: 'Could not fetch teams',
             debug: JSON.stringify(err)
           });
         }
       }
-
-      res.render('teams', params);
     }
   }
 );

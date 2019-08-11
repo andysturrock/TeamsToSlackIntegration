@@ -85,6 +85,7 @@ export class GraphService {
     try {
       const result = await this.msalService.loginPopup(OAuthSettings.scopes);
       if (result) {
+        console.error("signIn result = " + util.inspect(result))
         this.authenticated = true;
         await this.initGraphAsync();
         await this.setUser();
@@ -131,7 +132,15 @@ export class GraphService {
 
       this.user = new User();
       this.user.token = this.accessToken;
-      console.error("accessToken = " + this.accessToken);
+      console.error("graphUser = " + util.inspect(graphUser));
+      const user = await this.msalService.getUser();
+      console.error("setUser user = " + util.inspect(user))
+
+      const cachedTokenInternal = this.msalService.getCachedTokenInternal(OAuthSettings.scopes)
+      console.error("setUser cachedTokenInternal = " + util.inspect(cachedTokenInternal))
+
+
+
       this.user.displayName = graphUser.displayName;
       // Prefer the mail property, but fall back to userPrincipalName
       this.user.email = graphUser.mail || graphUser.userPrincipalName;

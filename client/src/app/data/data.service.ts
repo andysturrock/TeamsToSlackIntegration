@@ -1,15 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ChannelMapping } from '../channelMapping';
 import { Observable, of, from } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { GraphService } from '../graph/graph.service';
 import { SlackWebApiService } from '../slack-web-api/slack-web-api.service';
 import { ServerApiService } from '../server-api/server-api.service';
 import * as util from 'util';
-
-const httpOptions = {
-  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-};
 
 // This class doesn't do much.  It's just a facade over the various API services.
 @Injectable()

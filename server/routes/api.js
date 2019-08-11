@@ -5,6 +5,7 @@ const logger = require('pino')()
 const createError = require('http-errors');
 const util = require('util')
 const channelMaps = require('../channel-maps')
+const tokens = require('../oauth/tokens.js');
 
 router.get('/', async function (req, res) {
   // TODO check that the oauth token is
@@ -52,6 +53,9 @@ router.post('/', async function (req, res) {
       logger.error("Missing fields in body", req.body)
       res.status(200).json({ error: 'One or more missing fields' });
     } else {
+      // Get the on-behalf-of token
+      const onBehalfOfToken = await tokens.getOnBehalfOfTokenAsync(channelMapping.mappingOwner.token)
+      channelMapping.mappingOwner.token = onBehalfOfToken
       await channelMaps.saveMapAsync(req.body)
       res.status(200).json({ result: 'success' });
     }

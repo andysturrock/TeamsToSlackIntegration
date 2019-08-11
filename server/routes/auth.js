@@ -3,6 +3,7 @@ const express = require('express');
 const passport = require('passport');
 const router = express.Router();
 const logger = require('pino')()
+const util = require('util')
 
 /* GET auth callback. */
 router.get('/signin',
@@ -41,7 +42,7 @@ router.post('/callback',
         }
       )(req, res, next);
     } catch (error) {
-      logger.error("router.get('/callback') %o", error)
+      logger.error("router.get('/callback'): " + util.inspect(error))
     }
   },
   function (req, res) {

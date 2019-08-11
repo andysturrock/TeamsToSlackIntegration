@@ -58,7 +58,6 @@ export class MappingDialogComponent {
   }
 
   private onSubmit(): void {
-    // this.channelMapping.position = this.dataService.dataLength();
     this.event.emit({ data: this.channelMapping });
     this.dialogRef.close();
   }

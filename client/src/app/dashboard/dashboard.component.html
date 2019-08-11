@@ -45,7 +45,7 @@
                   <mat-cell *matCellDef="let element">
                     <div *ngIf="displayDeleteButton(element); then deleteButton"></div>
                     <ng-template #deleteButton>
-                      <a (click)="deleteMapping(element.position)" type="button">
+                      <a (click)="deleteMapping(element)" type="button">
                         <mat-icon class="icon">delete</mat-icon>
                       </a>
                     </ng-template>

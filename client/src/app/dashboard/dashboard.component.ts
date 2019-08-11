@@ -1,11 +1,11 @@
-import {Component} from '@angular/core';
-import {DataService} from '../data/data.service';
-import {ChannelMapping} from '../channelMapping';
-import {DataSource} from '@angular/cdk/table';
-import {Observable} from 'rxjs/Observable';
-import {GraphService} from '../graph/graph.service';
-import {MappingDialogComponent} from '../mapping-dialog/mapping-dialog.component';
-import {MatDialog} from '@angular/material';
+import { Component } from '@angular/core';
+import { DataService } from '../data/data.service';
+import { ChannelMapping } from '../channelMapping';
+import { DataSource } from '@angular/cdk/table';
+import { Observable, of } from 'rxjs';
+import { GraphService } from '../graph/graph.service';
+import { MappingDialogComponent } from '../mapping-dialog/mapping-dialog.component';
+import { MatDialog } from '@angular/material';
 import * as util from 'util';
 
 @Component({
@@ -27,17 +27,17 @@ export class DashboardComponent {
     return (element && this.graph.getUser() && element.mappingOwner.id == this.graph.getUser().id)
   }
 
-  deleteMapping(id) {
+  deleteMapping(element) {
+    console.error("deleteMapping(element) = " + util.inspect(element))
     if (this.graph.isAuthenticated()) {
-      this.dataService.deleteMapping(id);
-      this.dataSource = new ChannelMappingDataSource(this.dataService);
+      this.dataService.deleteMappingAsync(element).then(() => { this.dataSource = new ChannelMappingDataSource(this.dataService); });
     } else {
       alert('Log in to add/edit/delete mappings');
     }
   }
 
   getDisplayedColumns() {
-    if(this.graph.isAuthenticated()) {
+    if (this.graph.isAuthenticated()) {
       return ['teams', 'slack', 'owner', 'delete'];
     } else {
       return ['teams', 'slack', 'owner'];
@@ -62,7 +62,7 @@ export class ChannelMappingDataSource extends DataSource<any> {
   }
 
   connect(): Observable<ChannelMapping[]> {
-    return this.dataService.getData();
+    return this.dataService.getMappings();
   }
 
   disconnect() {

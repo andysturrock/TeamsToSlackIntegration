@@ -1,5 +1,6 @@
 'use strict'
 const util = require('util')
+const logger = require('pino')()
 
 // Pesist the following to redis:
 // Last polled time for each Teams channel
@@ -13,6 +14,7 @@ const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);
 const saddAsync = promisify(client.sadd).bind(client);
 const smembersAsync = promisify(client.smembers).bind(client);
+const sremAsync = promisify(client.srem).bind(client);
 
 // TODO - remove these
 const slackTest = "fb5cb1df-ad0a-4ae4-b979-21db4a48f68c"
@@ -114,6 +116,15 @@ module.exports = {
     },
 
     saveMapAsync: async function(channelMapping) {
-        await setAsync('Mapping/' + JSON.stringify(channelMapping))
+        await saddAsync('Mappings', JSON.stringify(channelMapping))
+    },
+
+    getMapsAsync: async function() {
+        const mappings = await smembersAsync('Mappings')
+        return mappings ? mappings : {}
+    },
+
+    deleteMapAsync: async function(channelMapping) {
+        await sremAsync('Mappings', JSON.stringify(channelMapping));
     }
 };

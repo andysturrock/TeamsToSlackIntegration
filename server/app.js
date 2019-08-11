@@ -6,18 +6,22 @@ const path = require('path');
 const util = require('util')
 const logger = require('pino')()
 const pino = require('express-pino-logger')()
+const cors = require('cors')
 
 const configuredPassport = require('./oauth/passport')
 
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
-const mappingsRouter = require('./routes/mappings');
+const apiRouter = require('./routes/api');
 
 const app = express();
 app.use(pino)
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
+
+app.use(cors())
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize passport
@@ -33,14 +37,9 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200');
-    next();
-});
-
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
-app.use('/mappings', mappingsRouter);
+app.use('/api', apiRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

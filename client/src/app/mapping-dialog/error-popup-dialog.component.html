@@ -1,0 +1,11 @@
+<h1 mat-dialog-title>{{data.title}}</h1>
+<div mat-dialog-content class="error-popup">
+  <p>Error:</p>
+  <mat-form-field>
+    <textarea name="Error" readonly matInput value="{{data.errorText}}"></textarea>
+  </mat-form-field>
+  <p>Please try logging out and back in again</p>
+</div>
+<div mat-dialog-actions>
+  <button mat-button [mat-dialog-close] cdkFocusInitial>OK</button>
+</div>

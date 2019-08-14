@@ -5,6 +5,7 @@ import { DataSource } from '@angular/cdk/table';
 import { Observable, of } from 'rxjs';
 import { GraphService } from '../graph/graph.service';
 import { MappingDialogComponent } from '../mapping-dialog/mapping-dialog.component';
+import { ErrorPopupDialogComponent } from '../mapping-dialog/error-popup-dialog.component';
 import { MatDialog } from '@angular/material';
 import * as util from 'util';
 
@@ -45,13 +46,21 @@ export class DashboardComponent {
   }
 
   openDialog(): void {
-    let dialogRef = this.dialog.open(MappingDialogComponent, {
+    const mappingDialogRef = this.dialog.open(MappingDialogComponent, {
       width: '600px',
       data: 'Add Mapping'
     });
-    dialogRef.componentInstance.event.subscribe((result) => {
-      this.dataService.addMappingAsync(result.data);
-      this.dataSource = new ChannelMappingDataSource(this.dataService);
+    mappingDialogRef.componentInstance.event.subscribe(async (result) => {
+      try {
+        await this.dataService.addMappingAsync(result.data);
+        this.dataSource = new ChannelMappingDataSource(this.dataService);
+      }
+      catch (error) {
+        this.dialog.open(ErrorPopupDialogComponent, {
+          width: '600px',
+          data: {title: 'Error adding channel mapping', errorText: JSON.stringify(error)}
+        });
+      }
     });
   }
 }

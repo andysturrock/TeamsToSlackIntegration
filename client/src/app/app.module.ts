@@ -28,6 +28,7 @@ import { GraphService } from './graph/graph.service';
 import { SlackWebApiService } from './slack-web-api/slack-web-api.service'
 import { ServerApiService } from './server-api/server-api.service';
 import { MappingDialogComponent } from './mapping-dialog/mapping-dialog.component';
+import { ErrorPopupDialogComponent } from './mapping-dialog/error-popup-dialog.component';
 import { FormsModule } from '@angular/forms';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -47,7 +48,8 @@ library.add(faUserCircle);
     AppComponent,
     WelcomeComponent,
     DashboardComponent,
-    MappingDialogComponent
+    MappingDialogComponent,
+    ErrorPopupDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -78,7 +80,8 @@ library.add(faUserCircle);
   providers: [DataService, GraphService, SlackWebApiService, ServerApiService],
   bootstrap: [AppComponent],
   entryComponents: [
-    MappingDialogComponent
+    MappingDialogComponent,
+    ErrorPopupDialogComponent
   ]
 })
 export class AppModule { }

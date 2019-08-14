@@ -1,0 +1,12 @@
+.error-popup {
+  display: flex;
+  flex-direction: column;
+}
+
+.error-popup > * {
+  width: 100%;
+}
+
+.close{
+  width: 100%;
+}

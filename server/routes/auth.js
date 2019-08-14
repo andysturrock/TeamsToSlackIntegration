@@ -9,6 +9,7 @@ const util = require('util')
 router.get('/signin',
   function (req, res, next) {
     try {
+      logger.info("Signing in...")
       passport.authenticate('azuread-openidconnect',
         {
           response: res,
@@ -17,6 +18,7 @@ router.get('/signin',
           failureFlash: true
         }
       )(req, res, next);
+      logger.info("After passport.authenticate")
     } catch (error) {
       logger.error("router.get('/signin') %o", error)
     }

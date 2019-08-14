@@ -5,10 +5,13 @@ const express = require('express');
 const path = require('path');
 const util = require('util')
 const logger = require('pino')()
-const pino = require('express-pino-logger')()
+const pino = require('express-pino-logger')({
+    level: process.env.LOG_LEVEL || 'warn'
+  })
 const cors = require('cors')
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
+const flash = require('req-flash');
 
 const configuredPassport = require('./oauth/passport')
 
@@ -37,6 +40,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Initialize passport
 app.use(configuredPassport.initialize());
 app.use(configuredPassport.session());
+app.use(flash())
 
 app.use(function (req, res, next) {
     // Set the authenticated user in the
@@ -95,13 +99,13 @@ const channelMaps = require('./channel-maps')
 class ChannelMapping {
     constructor(json) {
         // if (!json) {
-            this.team = { id: null, name: null };
-            this.teamsChannel = { id: null, name: null };
-            this.workspace = { id: null, name: null };
-            this.slackChannel = { id: null, name: null };
-            this.mappingOwner = { id: null, name: null, token: null };
+        this.team = { id: null, name: null };
+        this.teamsChannel = { id: null, name: null };
+        this.workspace = { id: null, name: null };
+        this.slackChannel = { id: null, name: null };
+        this.mappingOwner = { id: null, name: null, token: null };
         // }
-        if(json) {
+        if (json) {
             const jsonAny = JSON.parse(json)
             this.team.id = jsonAny.team.id
             this.team.name = jsonAny.team.name
@@ -121,14 +125,16 @@ class ChannelMapping {
 const arse = async () => {
     try {
         const channelMappings = await channelMaps.getMapsAsync();
+        logger.error("channelMappings = ", channelMappings)
         for (let mapping of channelMappings) {
             const channelMapping = new ChannelMapping(mapping)
             const mappingOwner = channelMapping.mappingOwner;
             const token = mappingOwner.token
-            // logger.error("token = ", token)
+            logger.error("token = ", token)
 
             const OBOtoken = await tokens.getOnBehalfOfTokenAsync(token)
-            // logger.error("OBOtoken = ", OBOtoken)
+            logger.error("OBOtoken = ", OBOtoken)
+            
             // const oauthToken = oauth2.accessToken.create(token);
 
             // const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);

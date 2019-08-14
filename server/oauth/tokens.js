@@ -1,5 +1,7 @@
 'use strict'
 const util = require('util')
+const querystring = require('qs');
+const https = require('https');
 const axios = require('axios');
 const logger = require('pino')()
 
@@ -41,59 +43,63 @@ module.exports = {
 
   getOnBehalfOfTokenAsync: async function (accessToken) {
     try {
-      console.trace("getOnBehalfOfTokenAsync")
-      let url = `https://login.microsoftonline.com/${process.env.OAUTH_TENANT_ID}/oauth2/v2.0/token`
-      // const config = {
-      //   params: {
-      //     grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      //     client_id: process.env.OAUTH_APP_ID,
-      //     client_secret: process.env.OAUTH_APP_PASSWORD,
-      //     assertion: accessToken,
-      //     scope: process.env.OAUTH_SCOPES,
-      //     requested_token_use: 'on_behalf_of'
-      //   }
-      // }
-      // const config = {
-      //   params: {
-      //     grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      //     client_id: process.env.OAUTH_APP_ID,
-      //     client_secret: process.env.OAUTH_APP_PASSWORD,
-      //     assertion: accessToken,
-      //     scope: process.env.OAUTH_SCOPES,
-      //     requested_token_use: 'on_behalf_of'
-      //   }
-      // }
 
-
-      const querystring = require('qs');
-      const params = {
+      const postData = querystring.stringify({
         'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
         'client_id': process.env.OAUTH_APP_ID,
-        client_secret: process.env.OAUTH_APP_PASSWORD,
-        assertion: accessToken,
-        scope: 'https://graph.microsoft.com/user.read+offline_access',
-        requested_token_use: 'on_behalf_of'
-      }
-      const options = {
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        // params: querystring.stringify(params),
-        data: querystring.stringify(params),
-        url,
+        'client_secret': process.env.OAUTH_APP_PASSWORD,
+        'assertion': accessToken,
+        'scope': `${process.env.OAUTH_GRAPH_SCOPES}`,
+        'requested_token_use': 'on_behalf_of'
+      });
+      const config = {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': postData.length
+        }
       };
-      const response = await axios(options);
+      const response = await axios.post(`https://login.microsoftonline.com/${process.env.OAUTH_TENANT_ID}/oauth2/v2.0/token`, postData, config)
+
       logger.error("getOnBehalfOfToken() response" + util.inspect(response));
 
+      // const postData = querystring.stringify({
+      //   'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      //   'client_id': process.env.OAUTH_APP_ID,
+      //   'client_secret': process.env.OAUTH_APP_PASSWORD,
+      //   'assertion': accessToken,
+      //   'scope': `${process.env.OAUTH_GRAPH_SCOPES}`,
+      //   'requested_token_use': 'on_behalf_of'
+      // });
+      // logger.error("getOnBehalfOfToken() accessToken:" + util.inspect(accessToken));
+      // logger.error("getOnBehalfOfToken() postData:" + util.inspect(postData));
 
-      // logger.error("getOnBehalfOfToken() config" + util.inspect(config));
+      // const options = {
+      //   hostname: 'login.microsoftonline.com',
+      //   method: 'POST',
+      //   path: `/${process.env.OAUTH_TENANT_ID}/oauth2/v2.0/token`,
+      //   headers: {
+      //        'Content-Type': 'application/x-www-form-urlencoded',
+      //        'Content-Length': postData.length
+      //      }
+      // };
+      // logger.error("getOnBehalfOfToken() options" + util.inspect(options));
 
-      // axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+      // var req = https.request(options, (res) => {
+      //   logger.error('statusCode:', res.statusCode);
+      //   logger.error('headers:', res.headers);
 
-      // const querystring = require('querystring');
-      // const qsConfig = querystring.stringify(config)
-      // logger.error("getOnBehalfOfToken() qsConfig" + util.inspect(qsConfig));
-      // const response = await axios.post(url, null, qsConfig);
-      // logger.error("getOnBehalfOfToken() response" + util.inspect(response));
+      //   res.on('data', (d) => {
+      //     process.stdout.write("Wahey: " + d);
+      //   });
+      // });
+
+      // req.on('error', (e) => {
+      //   logger.error(e);
+      // });
+
+      // req.write(postData);
+      // req.end();
+
     } catch (error) {
       logger.error('getOnBehalfOfToken() error = ' + util.inspect(error));
     }

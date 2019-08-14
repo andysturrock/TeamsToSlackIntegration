@@ -54,7 +54,9 @@ router.post('/', async function (req, res) {
       res.status(200).json({ error: 'One or more missing fields' });
     } else {
       // Get the on-behalf-of token
+      logger.error("channelMapping.mappingOwner.token = ", channelMapping.mappingOwner.token)
       const onBehalfOfToken = await tokens.getOnBehalfOfTokenAsync(channelMapping.mappingOwner.token)
+      logger.error("onBehalfOfToken = ", onBehalfOfToken)
       channelMapping.mappingOwner.token = onBehalfOfToken
       await channelMaps.saveMapAsync(req.body)
       res.status(200).json({ result: 'success' });

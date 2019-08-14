@@ -27,7 +27,7 @@ export class GraphService {
       // provider that requests the token from the
       // auth service
       authProvider: async (done) => {
-        let token = await this.getAccessTokenAsync()
+        let token = await this.getAccessTokenAsync(OAuthSettings.graphScopes)
           .catch((reason) => {
             done(reason, null);
           })
@@ -83,7 +83,7 @@ export class GraphService {
   // grant consent to the requested permission scopes
   async signIn(): Promise<void> {
     try {
-      const result = await this.msalService.loginPopup(OAuthSettings.scopes);
+      const result = await this.msalService.loginPopup(OAuthSettings.graphScopes);
       if (result) {
         console.error("signIn result = " + util.inspect(result))
         this.authenticated = true;
@@ -103,8 +103,8 @@ export class GraphService {
   }
 
   // Silently request an access token
-  async getAccessTokenAsync(): Promise<string> {
-    let result = await this.msalService.acquireTokenSilent(OAuthSettings.scopes)
+  async getAccessTokenAsync(scopes): Promise<string> {
+    let result = await this.msalService.acquireTokenSilent(scopes)
       .catch((reason) => {
         console.error('Get token failed', JSON.stringify(reason, null, 2));
       });
@@ -131,15 +131,12 @@ export class GraphService {
       let graphUser = await this.graphClient.api('/me').get();
 
       this.user = new User();
-      this.user.token = this.accessToken;
+      const apiToken = await this.getAccessTokenAsync(OAuthSettings.serverAPIScopes);
+      this.user.ApiToken = apiToken;
       console.error("graphUser = " + util.inspect(graphUser));
       const user = await this.msalService.getUser();
       console.error("setUser user = " + util.inspect(user))
-
-      const cachedTokenInternal = this.msalService.getCachedTokenInternal(OAuthSettings.scopes)
-      console.error("setUser cachedTokenInternal = " + util.inspect(cachedTokenInternal))
-
-
+      console.error("setUser this.user = " + util.inspect(this.user))
 
       this.user.displayName = graphUser.displayName;
       // Prefer the mail property, but fall back to userPrincipalName

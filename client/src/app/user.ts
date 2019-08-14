@@ -3,5 +3,5 @@ export class User {
     id: string;
     email: string;
     avatar: string;
-    token: string;
+    ApiToken: string; // Token for accessing the server API
   }

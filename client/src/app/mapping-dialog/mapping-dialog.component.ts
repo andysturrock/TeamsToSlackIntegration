@@ -32,7 +32,7 @@ export class MappingDialogComponent {
 
   async ngOnInitAsync() {
     const user = await this.dataService.getUserAsync();
-    this.channelMapping.mappingOwner = { name: user.displayName, id: user.id, token: user.token };
+    this.channelMapping.mappingOwner = { name: user.displayName, id: user.id, token: user.ApiToken };
     this.teams = await this.dataService.getTeamsAsync(this.channelMapping.mappingOwner.id);
   }
 

@@ -133,10 +133,7 @@ export class GraphService {
       this.user = new User();
       const apiToken = await this.getAccessTokenAsync(OAuthSettings.serverAPIScopes);
       this.user.ApiToken = apiToken;
-      console.error("graphUser = " + util.inspect(graphUser));
       const user = await this.msalService.getUser();
-      console.error("setUser user = " + util.inspect(user))
-      console.error("setUser this.user = " + util.inspect(this.user))
 
       this.user.displayName = graphUser.displayName;
       // Prefer the mail property, but fall back to userPrincipalName

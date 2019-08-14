@@ -7,7 +7,7 @@ const util = require('util')
 const logger = require('pino')()
 const pino = require('express-pino-logger')({
     level: process.env.LOG_LEVEL || 'warn'
-  })
+})
 const cors = require('cors')
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
@@ -71,45 +71,19 @@ app.use(function (err, req, res, next) {
 });
 
 const oauth2 = require('./oauth/oauth.js')
-const redis = require("redis")
-const client = redis.createClient();
-const { promisify } = require('util');
-const getAsync = promisify(client.get).bind(client);
-const tokens = require('./oauth/tokens.js');
-const checkForMessagesWithoutUserLogon = async () => {
-    try {
-        const profileAndToken = JSON.parse(await getAsync('users/5a85aa45-9606-4698-b599-44697e2cbfcb'))
-        logger.error("profileAndToken.oauthToken.token = " + util.inspect(profileAndToken.oauthToken.token))
-        const oauthToken = oauth2.accessToken.create(profileAndToken.oauthToken.token);
-
-        logger.error("oauthToken = " + util.inspect(oauthToken))
-        const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
-        logger.error("oauthToken = ", oauthToken)
-        logger.error("accessToken = ", accessToken)
-        const teams = require('./teams');
-        // await teams.pollTeamsForMessagesAsync(accessToken)
-    } catch (err) {
-        logger.error("checkForMessagesWithoutUserLogon()\n" + util.inspect(err) + "\n" + err.stack)
-    }
-}
-
 const channelMaps = require('./channel-maps')
-// checkForMessagesWithoutUserLogon()
-//setInterval(checkForMessagesWithoutUserLogon, 5000);
-
-const arse = async () => {
+const teams = require('./teams');
+const checkForMessagesInMappings = async () => {
     try {
         const channelMappings = await channelMaps.getMapsAsync();
-        logger.error("channelMappings = ", channelMappings)
         for (let channelMapping of channelMappings) {
-            
-            const teams = require('./teams');
             await teams.pollTeamsForMessagesAsync(channelMapping)
         }
     } catch (err) {
         logger.error("arse()\n" + util.inspect(err) + "\n" + err.stack)
     }
 }
-arse()
+checkForMessagesInMappings()
+//setInterval(checkForMessagesInMappings, 5000);
 
 module.exports = app;

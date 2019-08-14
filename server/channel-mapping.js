@@ -9,7 +9,7 @@ module.exports = class ChannelMapping {
         this.workspace = { id: null, name: null };
         this.slackChannel = { id: null, name: null };
         this.mappingOwner = { id: null, name: null, token: null };
-logger.error("ctor parsing:" + json)
+// logger.error("ctor parsing:" + json)
         if (json) {
             const jsonAny = JSON.parse(json)
             this.team.id = jsonAny.team.id

@@ -3,6 +3,7 @@ const util = require('util')
 const querystring = require('qs');
 const https = require('https');
 const logger = require('pino')()
+const jwt = require('jsonwebtoken');
 
 module.exports = {
   getAccessTokenAsync: async function (req) {
@@ -27,12 +28,21 @@ module.exports = {
 
   getRefreshedTokenAsync: async function (storedToken) {
     if (storedToken) {
+      const buff = new Buffer(storedToken.token.access_token, 'base64');
+      const text = buff.toString('UTF-8');
+      console.error("decoded text = " + text)
+      const decoded = jwt.decode(text);
+      console.error("decoded token = " + decoded)
       if (storedToken.expired()) {
+        console.error("token had expired = old was " + util.inspect(storedToken))
         // refresh token
         const newToken = await storedToken.refresh();
+        console.error("New token is " + util.inspect(newToken))
 
         // Update stored token
         return newToken.token.access_token;
+      } else {
+        console.error("getRefreshedTokenAsync token not expired")
       }
 
       // Token still valid, just return it

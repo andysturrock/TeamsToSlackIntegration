@@ -28,16 +28,7 @@ export class ServerApiService {
       // TODO - protect the API
       let params = new HttpParams().set('token', 'TODO')
       httpOptions.params = params;
-      let response = await this.http.get<any>('http://localhost:3000/api', httpOptions).toPromise();
-      // console.error("getMappingsAsync() response = " + util.inspect(response))
-      const mappings: ChannelMapping[] = []
-      for (let mappingString of response) {
-        // console.error("mappingString = " + util.inspect(JSON.parse(mappingString)))
-        const mapping = new ChannelMapping(mappingString)
-        // console.error("mapping = " + util.inspect(mapping))
-        mappings.push(mapping)
-      }
-      return mappings;
+      return await this.http.get<ChannelMapping[]>('http://localhost:3000/api', httpOptions).toPromise();
     }
     catch (error) {
       console.error("getMappingsAsync() error: " + util.inspect(error))

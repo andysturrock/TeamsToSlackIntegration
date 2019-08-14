@@ -11,21 +11,21 @@ const tokens = require('./oauth/tokens')
 module.exports = {
   pollTeamsForMessagesAsync: async function (channelMapping) {
     try {
-      console.error("pollTeamsForMessagesAsync() channelMapping = " + util.inspect(channelMapping))
       const teamId = channelMapping.team.id
       const teamsChannelId = channelMapping.teamsChannel.id
       logger.debug(`Looking for Slack channel for ${teamId}/${teamsChannelId}`)
       const slackChannelId = channelMapping.slackChannel.id;
-      
-      // Refresh the token
-      const token = channelMapping.mappingOwner.token
-      logger.error("orig token = ", token)
-      const oauthToken = oauth2.accessToken.create(token);
+
+      // Refresh the token if it needs it
+      const oauthToken = oauth2.accessToken.create(channelMapping.mappingOwner.token);
+      console.error("Refreshing token..." + util.inspect(channelMapping.mappingOwner.token))
       const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
-      logger.error("refreshed token = ", accessToken)
-      channelMapping.mappingOwner.accessToken = accessToken
-      // And save back to the DB
-      await channelMaps.saveMapAsync(channelMapping)
+      console.error("Got refreshed token." + util.inspect(accessToken))
+      // Save it back to the DB if it was actually refreshed
+      if (accessToken != channelMapping.mappingOwner.token.access_token) {
+        channelMapping.mappingOwner.token.access_token = accessToken
+        await channelMaps.saveMapAsync(channelMapping)
+      }
 
       // Check the time of the last message we saw from this channel
       let lastMessageTime = await channelMaps.getLastMessageTimeAsync(teamId, teamsChannelId)
@@ -35,11 +35,11 @@ module.exports = {
         slackWeb.postMessageAsync("Can't find any previous messages from this Teams channel - please check Teams", slackChannelId)
         await channelMaps.setLastMessageTimeAsync(teamId, teamsChannelId, new Date())
       } else {
-        logger.debug("lastMessageTime: " + lastMessageTime + " getting messages since then...")
+        logger.error("lastMessageTime: " + lastMessageTime + " getting messages since then...")
         // Get the messages from this channel since the last one we saw...
         const messages = await graph.getMessagesAfterAsync(accessToken, teamId, teamsChannelId, lastMessageTime);
 
-        logger.debug("Found: " + messages.length + " messages so processing...")
+        logger.error("Found: " + messages.length + " messages so processing...")
         // And post them to Slack
         for (let message of messages) {
           const messageCreatedDateTime = new Date(message.createdDateTime)

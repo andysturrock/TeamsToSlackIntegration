@@ -12,19 +12,10 @@ const client = redis.createClient();
 const { promisify } = require('util');
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);
+const delAsync = promisify(client.del).bind(client);
 const saddAsync = promisify(client.sadd).bind(client);
 const smembersAsync = promisify(client.smembers).bind(client);
 const sremAsync = promisify(client.srem).bind(client);
-
-// TODO - remove these
-const slackTest = "fb5cb1df-ad0a-4ae4-b979-21db4a48f68c"
-const teamsGeneral = "19:fb442837eaa74fd4ae81ed89c5e39cf6@thread.skype"
-const slackGeneral = "C7F9N62KS"
-
-client.set("TeamsChannel2SlackChannel/" + createTeamsChannelKey(slackTest, teamsGeneral), slackGeneral)
-client.set("SlackChannel2TeamsChannel/" + slackGeneral, createTeamsChannelKey(slackTest, teamsGeneral))
-// END TODO
-
 
 function createTeamsChannelKey(teamId, teamsChannelId) {
     return `${teamId}/${teamsChannelId}`
@@ -46,8 +37,9 @@ function splitTeamsMessageKey(compoundKey) {
 
 module.exports = {
     mapChannelsAsync: async function (teamId, teamsChannelId, slackChannelId) {
-        await setAsync("TeamsChannel2SlackChannel/" + createTeamsChannelKey(teamId, teamsChannelId), slackChannelId)
-        await setAsync("SlackChannel2TeamsChannel/" + slackChannelId, createTeamsChannelKey(teamId, teamsChannelId))
+        console.trace("mapChannelsAsync")
+        // await setAsync("TeamsChannel2SlackChannel/" + createTeamsChannelKey(teamId, teamsChannelId), slackChannelId)
+        // await setAsync("SlackChannel2TeamsChannel/" + slackChannelId, createTeamsChannelKey(teamId, teamsChannelId))
     },
 
     getSlackChannelAsync: async function (teamId, teamsChannelId) {
@@ -85,7 +77,7 @@ module.exports = {
         // null gets turned into 1st Jan 1970 by the Date constructor.  We want to actually return null
         // if we don't have a date for this Teams channel.
         // The stringify and parse stuff is to stop the milliseconds being truncated
-        // which is what happens if you just set/get the object
+        // which is what happens if you just set/get the object.
         return date ? new Date(JSON.parse(date)) : date
     },
 
@@ -115,16 +107,32 @@ module.exports = {
         await saddAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId), messageId)
     },
 
-    saveMapAsync: async function(channelMapping) {
-        await saddAsync('Mappings', JSON.stringify(channelMapping))
+    saveMapAsync: async function (channelMapping) {
+        let key = "TeamsChannel2SlackChannel/" + createTeamsChannelKey(channelMapping.team.id, channelMapping.teamsChannel.id)
+        await setAsync(key, JSON.stringify(channelMapping))
+        key = "SlackChannel2TeamsChannel/" + channelMapping.slackChannel.id
+        await setAsync(key, JSON.stringify(channelMapping))
     },
 
-    getMapsAsync: async function() {
-        const mappings = await smembersAsync('Mappings')
-        return mappings ? mappings : {}
+    getMapsAsync: async function () {
+        return new Promise((resolve, reject) => {
+            client.keys('TeamsChannel2SlackChannel/*', async (err, keys) => {
+                if (err) {
+                    reject(err)
+                }
+                let channels = []
+                for (let key of keys) {
+                    channels.push(await getAsync(key))
+                }
+                resolve(channels)
+            })
+        })
     },
 
-    deleteMapAsync: async function(channelMapping) {
-        await sremAsync('Mappings', JSON.stringify(channelMapping));
+    deleteMapAsync: async function (channelMapping) {
+        let key = "TeamsChannel2SlackChannel/" + createTeamsChannelKey(channelMapping.team.id, channelMapping.teamsChannel.id)
+        await delAsync(key)
+        key = "SlackChannel2TeamsChannel/" + channelMapping.slackChannel.id
+        await delAsync(key)
     }
 };

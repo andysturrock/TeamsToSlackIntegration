@@ -134,7 +134,7 @@ const arse = async () => {
 
             const OBOtoken = await tokens.getOnBehalfOfTokenAsync(token)
             logger.error("OBOtoken = ", OBOtoken)
-            
+
             // const oauthToken = oauth2.accessToken.create(token);
 
             // const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
@@ -144,9 +144,9 @@ const arse = async () => {
             // await teams.pollTeamsForMessagesAsync(accessToken)
         }
     } catch (err) {
-        logger.error("checkForMessagesWithoutUserLogon()\n" + util.inspect(err) + "\n" + err.stack)
+        logger.error("arse()\n" + util.inspect(err) + "\n" + err.stack)
     }
 }
-arse()
+//arse()
 
 module.exports = app;

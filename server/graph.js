@@ -16,20 +16,13 @@ module.exports = {
 
   getTeamsAndChannelsAsync: async function (accessToken) {
     const client = getAuthenticatedClient(accessToken);
-
-    try {
-      const teamsAndChannels = []
-      const teams = await getMyTeamsAsync(client)
-      for (let team of teams.value) {
-        channels = await getChannelsInTeamAsync(client, team.id)
-        teamsAndChannels.push({ id: `${team.id}`, displayName: `${team.displayName}`, channels: channels.value })
-      }
-      return teamsAndChannels;
+    const teamsAndChannels = []
+    const teams = await getMyTeamsAsync(client)
+    for (let team of teams.value) {
+      channels = await getChannelsInTeamAsync(client, team.id)
+      teamsAndChannels.push({ id: `${team.id}`, displayName: `${team.displayName}`, channels: channels.value })
     }
-    catch (error) {
-      logger.error("getTeamsAndChannelsAsync() %o ", error)
-      throw (error)
-    }
+    return teamsAndChannels;
   },
 
   getMessagesAfterAsync: async function (accessToken, teamId, channelId, date) {
@@ -55,14 +48,8 @@ module.exports = {
 
   getMessagesAsync: async function (accessToken, teamId, channelId) {
     const client = getAuthenticatedClient(accessToken);
-    try {
-      const messages = await getMessagesInChannelAsync(client, teamId, channelId)
-      return messages;
-    }
-    catch (error) {
-      logger.error("getMessagesAsync() %o", error)
-      throw (error)
-    }
+    const messages = await getMessagesInChannelAsync(client, teamId, channelId)
+    return messages;
   },
 
   getRepliesAfterAsync: async function (accessToken, teamId, channelId, messageId, date) {
@@ -120,37 +107,32 @@ async function getChannelsInTeamAsync(client, teamId) {
 async function getMessagesInChannelAsync(client, teamId, channelId) {
   let messages = [];
 
-  try {
-    let messagesData = await client
-      .api(`/teams/${teamId}/channels/${channelId}/messages`)
+  let messagesData = await client
+    .api(`/teams/${teamId}/channels/${channelId}/messages`)
+    .version('beta')
+    .top(PAGE_SIZE)
+    .get();
+
+
+  messages = messages.concat(messagesData.value)
+
+  let nextLink = messagesData['@odata.nextLink'] ?
+    messagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
+    false;
+
+  while (nextLink) {
+    const nextMessagesData = await client
+      .api(nextLink)
       .version('beta')
       .top(PAGE_SIZE)
       .get();
 
-
-    messages = messages.concat(messagesData.value)
-
-    let nextLink = messagesData['@odata.nextLink'] ?
-      messagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
-      false;
-
-    while (nextLink) {
-      const nextMessagesData = await client
-        .api(nextLink)
-        .version('beta')
-        .top(PAGE_SIZE)
-        .get();
-
-      if (nextMessagesData.value.length > 0) {
-        messages = messages.concat(nextMessagesData.value)
-      }
-      nextLink = nextMessagesData['@odata.nextLink'] ?
-        nextMessagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
-        false;
+    if (nextMessagesData.value.length > 0) {
+      messages = messages.concat(nextMessagesData.value)
     }
-  } catch (error) {
-    logger.error("getMessagesInChannelAsync() %o", error)
-    throw (error)
+    nextLink = nextMessagesData['@odata.nextLink'] ?
+      nextMessagesData['@odata.nextLink'].replace('https://graph.microsoft.com/beta', '') :
+      false;
   }
 
   return messages;

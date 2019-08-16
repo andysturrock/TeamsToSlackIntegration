@@ -1,6 +1,7 @@
 'use strict'
 const util = require('util')
 const logger = require('pino')()
+const ChannelMapping = require('./channel-mapping')
 
 // Pesist the following to redis:
 // Last polled time for each Teams channel
@@ -120,11 +121,12 @@ module.exports = {
                 if (err) {
                     reject(err)
                 }
-                let channels = []
+                let channelMappings = []
                 for (let key of keys) {
-                    channels.push(await getAsync(key))
+                    const channelMappingString = await getAsync(key)
+                    channelMappings.push(new ChannelMapping(channelMappingString))
                 }
-                resolve(channels)
+                resolve(channelMappings)
             })
         })
     },

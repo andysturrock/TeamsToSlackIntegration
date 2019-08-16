@@ -96,57 +96,20 @@ const checkForMessagesWithoutUserLogon = async () => {
 const channelMaps = require('./channel-maps')
 // checkForMessagesWithoutUserLogon()
 //setInterval(checkForMessagesWithoutUserLogon, 5000);
-class ChannelMapping {
-    constructor(json) {
-        // if (!json) {
-        this.team = { id: null, name: null };
-        this.teamsChannel = { id: null, name: null };
-        this.workspace = { id: null, name: null };
-        this.slackChannel = { id: null, name: null };
-        this.mappingOwner = { id: null, name: null, token: null };
-        // }
-        if (json) {
-            const jsonAny = JSON.parse(json)
-            this.team.id = jsonAny.team.id
-            this.team.name = jsonAny.team.name
-            this.teamsChannel.id = jsonAny.teamsChannel.id;
-            this.teamsChannel.name = jsonAny.teamsChannel.name;
-            this.workspace.id = jsonAny.workspace.id;
-            this.workspace.name = jsonAny.workspace.name;
-            this.slackChannel.id = jsonAny.slackChannel.id;
-            this.slackChannel.name = jsonAny.slackChannel.name;
-            this.mappingOwner.id = jsonAny.mappingOwner.id;
-            this.mappingOwner.name = jsonAny.mappingOwner.name;
-            this.mappingOwner.token = jsonAny.mappingOwner.token;
-        }
-    }
-}
 
 const arse = async () => {
     try {
         const channelMappings = await channelMaps.getMapsAsync();
         logger.error("channelMappings = ", channelMappings)
-        for (let mapping of channelMappings) {
-            const channelMapping = new ChannelMapping(mapping)
-            const mappingOwner = channelMapping.mappingOwner;
-            const token = mappingOwner.token
-            logger.error("token = ", token)
-
-            const OBOtoken = await tokens.getOnBehalfOfTokenAsync(token)
-            logger.error("OBOtoken = ", OBOtoken)
-
-            // const oauthToken = oauth2.accessToken.create(token);
-
-            // const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
-            // logger.error("oauthToken = ", oauthToken)
-            // logger.error("accessToken = ", accessToken)
-            // const teams = require('./teams');
-            // await teams.pollTeamsForMessagesAsync(accessToken)
+        for (let channelMapping of channelMappings) {
+            
+            const teams = require('./teams');
+            await teams.pollTeamsForMessagesAsync(channelMapping)
         }
     } catch (err) {
         logger.error("arse()\n" + util.inspect(err) + "\n" + err.stack)
     }
 }
-//arse()
+arse()
 
 module.exports = app;

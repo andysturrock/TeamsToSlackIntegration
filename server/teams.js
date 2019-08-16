@@ -5,84 +5,77 @@ const logger = require('pino')()
 const graph = require('./graph.js');
 const channelMaps = require('./channel-maps')
 const slackWeb = require('./slack-web-api')
-
-let alreadyPolling = false
+const oauth2 = require('./oauth/oauth')
+const tokens = require('./oauth/tokens')
 
 module.exports = {
-  pollTeamsForMessagesAsync: async function (accessToken) {
-    // If we end up with multiple invocations of this callback, we'll double-post
-    // So keep a track and just return if an existing invocation is in flight.
-    if (alreadyPolling) {
-      return
-    }
-
-    logger.info("Polling Teams for messages...")
-    alreadyPolling = true
+  pollTeamsForMessagesAsync: async function (channelMapping) {
     try {
-      const teamsChannels = await channelMaps.getTeamsChannelsAsync()
-      logger.debug("teamsChannels = " + util.inspect(teamsChannels))
-      for (let teamsChannel of teamsChannels) {
-        const teamId = teamsChannel.teamId
-        const teamsChannelId = teamsChannel.teamsChannelId;
-        logger.debug(`Looking for Slack channel for ${teamId}/${teamsChannelId}`)
-        const slackChannelId = await channelMaps.getSlackChannelAsync(teamId, teamsChannelId)
-        logger.debug("slackChannelId: " + util.inspect(slackChannelId))
-        if (slackChannelId) {
-          // Check the time of the last message we saw from this channel
-          let lastMessageTime = await channelMaps.getLastMessageTimeAsync(teamId, teamsChannelId)
-          // If we haven't seen any before, then post a warning and start from now
-          if (!lastMessageTime) {
-            logger.info(`Can't find a previous message from ${teamId}/${teamsChannelId}`)
-            slackWeb.postMessageAsync("Can't find any previous messages from this Teams channel - please check Teams", slackChannelId)
-            await channelMaps.setLastMessageTimeAsync(teamId, teamsChannelId, new Date())
-          } else {
-            logger.debug("lastMessageTime: " + lastMessageTime + " getting messages since then...")
-            // Get the messages from this channel since the last one we saw...
-            const messages = await graph.getMessagesAfterAsync(accessToken, teamId, teamsChannelId, lastMessageTime);
+      console.error("pollTeamsForMessagesAsync() channelMapping = " + util.inspect(channelMapping))
+      const teamId = channelMapping.team.id
+      const teamsChannelId = channelMapping.teamsChannel.id
+      logger.debug(`Looking for Slack channel for ${teamId}/${teamsChannelId}`)
+      const slackChannelId = channelMapping.slackChannel.id;
+      
+      // Refresh the token
+      const token = channelMapping.mappingOwner.token
+      logger.error("orig token = ", token)
+      const oauthToken = oauth2.accessToken.create(token);
+      const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
+      logger.error("refreshed token = ", accessToken)
+      channelMapping.mappingOwner.accessToken = accessToken
+      // And save back to the DB
+      await channelMaps.saveMapAsync(channelMapping)
 
-            logger.debug("Found: " + messages.length + " messages so processing...")
-            // And post them to Slack
-            for (let message of messages) {
-              const messageCreatedDateTime = new Date(message.createdDateTime)
+      // Check the time of the last message we saw from this channel
+      let lastMessageTime = await channelMaps.getLastMessageTimeAsync(teamId, teamsChannelId)
+      // If we haven't seen any before, then post a warning and start from now
+      if (!lastMessageTime) {
+        logger.info(`Can't find a previous message from ${teamId}/${teamsChannelId}`)
+        slackWeb.postMessageAsync("Can't find any previous messages from this Teams channel - please check Teams", slackChannelId)
+        await channelMaps.setLastMessageTimeAsync(teamId, teamsChannelId, new Date())
+      } else {
+        logger.debug("lastMessageTime: " + lastMessageTime + " getting messages since then...")
+        // Get the messages from this channel since the last one we saw...
+        const messages = await graph.getMessagesAfterAsync(accessToken, teamId, teamsChannelId, lastMessageTime);
 
-              // Put this in the set for use in reply processing later.
-              await channelMaps.addMessageIdAsync(teamId, teamsChannelId, message.id)
-              // Set the last reply time to the message created date.  We'll check for replies from that time.
-              await channelMaps.setLastReplyTimeAsync(teamId, teamsChannelId, message.id, messageCreatedDateTime)
+        logger.debug("Found: " + messages.length + " messages so processing...")
+        // And post them to Slack
+        for (let message of messages) {
+          const messageCreatedDateTime = new Date(message.createdDateTime)
 
-              logger.debug("message id: " + util.inspect(message.id))
-              logger.debug("Message body: " + util.inspect(message.body))
-              logger.debug("Message created time: " + messageCreatedDateTime)
-              logger.debug("Message from: " + util.inspect(message.from.user))
-              const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
-              const slackMessageId = await slackWeb.postMessageAsync(slackMessage, slackChannelId)
-              logger.debug(`slackMessageId = ${slackMessageId}`)
-              await channelMaps.setSlackMessageIdAsync(teamId, teamsChannelId, message.id, slackMessageId)
+          // Put this in the set for use in reply processing later.
+          await channelMaps.addMessageIdAsync(teamId, teamsChannelId, message.id)
+          // Set the last reply time to the message created date.  We'll check for replies from that time.
+          await channelMaps.setLastReplyTimeAsync(teamId, teamsChannelId, message.id, messageCreatedDateTime)
 
-              // Keep track of the latest message we've seen             
-              if (messageCreatedDateTime > lastMessageTime) {
-                lastMessageTime = messageCreatedDateTime
-              }
-            }
-            logger.debug("Setting last message time to " + lastMessageTime)
-            await channelMaps.setLastMessageTimeAsync(teamId, teamsChannelId, lastMessageTime)
+          logger.debug("message id: " + util.inspect(message.id))
+          logger.debug("Message body: " + util.inspect(message.body))
+          logger.debug("Message created time: " + messageCreatedDateTime)
+          logger.debug("Message from: " + util.inspect(message.from.user))
+          const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
+          const slackMessageId = await slackWeb.postMessageAsync(slackMessage, slackChannelId)
+          logger.debug(`slackMessageId = ${slackMessageId}`)
+          await channelMaps.setSlackMessageIdAsync(teamId, teamsChannelId, message.id, slackMessageId)
+
+          // Keep track of the latest message we've seen             
+          if (messageCreatedDateTime > lastMessageTime) {
+            lastMessageTime = messageCreatedDateTime
           }
-
-          // Now get all the replies.  Because of the crappy Teams/Graph API, we'll need to check every single
-          // message individually to see whether it's got a reply we haven't seen yet.
-          await pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, slackChannelId)
-        } else {
-          // Shouldn't happen.  We should 
-          logger.error(`Error - cannot find mapped Slack channel for ${teamId}/${teamsChannelId}`)
         }
+        logger.debug("Setting last message time to " + lastMessageTime)
+        await channelMaps.setLastMessageTimeAsync(teamId, teamsChannelId, lastMessageTime)
       }
+
+      // Now get all the replies.  Because of the crappy Teams/Graph API, we'll need to check every single
+      // message individually to see whether it's got a reply we haven't seen yet.
+      await pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, slackChannelId)
+
     } catch (error) {
-      logger.error("Error polling for Teams messages: %o %s", error, error.stack)
-    } finally {
-      alreadyPolling = false
+      logger.error("Error polling for Teams messages:" + util.inspect(error))
     }
-  },
-};
+  }
+}
 
 async function pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, slackChannelId) {
   logger.info("Polling Teams for replies...")

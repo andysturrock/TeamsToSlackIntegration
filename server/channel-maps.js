@@ -100,7 +100,7 @@ module.exports = {
     },
 
     getAllMessageIdsAsync: async function (teamId, teamsChannelId) {
-        const allMessageIds = await smembersAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId))
+        const allMessageIds = await smembersAsync('TeamsMessages/' + createTeamsChannelKey(teamId, teamsChannelId))
         return allMessageIds ? allMessageIds : []
     },
 

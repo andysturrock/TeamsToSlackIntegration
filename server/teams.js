@@ -8,19 +8,33 @@ const slackWeb = require('./slack-web-api')
 const oauth2 = require('./oauth/oauth')
 const tokens = require('./oauth/tokens')
 
+// Keep track of whether we are in the middle of polling for this
+// team and channel.  The function is re-entrant but it makes it
+// a lot more complicated if we're running it concurrently for the
+// same team and channel.
+const alreadyPollingForTeamAndChannel = new Map();
+
 module.exports = {
   pollTeamsForMessagesAsync: async function (channelMapping) {
+    const teamId = channelMapping.team.id
+    const teamsChannelId = channelMapping.teamsChannel.id
+    const teamName = channelMapping.team.name
+    const teamsChannelName = channelMapping.teamsChannel.name
     try {
-      const teamId = channelMapping.team.id
-      const teamsChannelId = channelMapping.teamsChannel.id
+      const alreadyPolling = alreadyPollingForTeamAndChannel.get(`teamId/teamsChannelId`)
+      if (alreadyPolling) {
+        logger.debug(`Already polling for ${teamName}/${teamsChannelName} so returning`)
+        return
+      }
+      alreadyPollingForTeamAndChannel.set(`teamId/teamsChannelId`, true)
+      logger.info(`Polling for messages in ${teamName}/${teamsChannelName}...`)
+      
       logger.debug(`Looking for Slack channel for ${teamId}/${teamsChannelId}`)
       const slackChannelId = channelMapping.slackChannel.id;
 
       // Refresh the token if it needs it
       const oauthToken = oauth2.accessToken.create(channelMapping.mappingOwner.token);
-      console.error("Refreshing token..." + util.inspect(channelMapping.mappingOwner.token))
       const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
-      console.error("Got refreshed token." + util.inspect(accessToken))
       // Save it back to the DB if it was actually refreshed
       if (accessToken != channelMapping.mappingOwner.token.access_token) {
         channelMapping.mappingOwner.token.access_token = accessToken
@@ -35,7 +49,7 @@ module.exports = {
         slackWeb.postMessageAsync("Can't find any previous messages from this Teams channel - please check Teams", slackChannelId)
         await channelMaps.setLastMessageTimeAsync(teamId, teamsChannelId, new Date())
       } else {
-        logger.error("lastMessageTime: " + lastMessageTime + " getting messages since then...")
+        logger.info("lastMessageTime: " + lastMessageTime + " getting messages since then...")
         // Get the messages from this channel since the last one we saw...
         const messages = await graph.getMessagesAfterAsync(accessToken, teamId, teamsChannelId, lastMessageTime);
 
@@ -73,6 +87,9 @@ module.exports = {
 
     } catch (error) {
       logger.error("Error polling for Teams messages:" + util.inspect(error))
+    } finally {
+      logger.info(`Done polling for messages in ${teamName}/${teamsChannelName}.`)
+      alreadyPollingForTeamAndChannel.set(`teamId/teamsChannelId`, true)
     }
   }
 }

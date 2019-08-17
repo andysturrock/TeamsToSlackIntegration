@@ -28,22 +28,18 @@ module.exports = {
 
   getRefreshedTokenAsync: async function (storedToken) {
     if (storedToken) {
-      const buff = new Buffer(storedToken.token.access_token, 'base64');
-      const text = buff.toString('UTF-8');
-      console.error("decoded text = " + text)
-      const decoded = jwt.decode(text);
-      console.error("decoded token = " + decoded)
-      if (storedToken.expired()) {
-        console.error("token had expired = old was " + util.inspect(storedToken))
-        // refresh token
-        const newToken = await storedToken.refresh();
-        console.error("New token is " + util.inspect(newToken))
+      // TODO - why doesn't this read the expired bit properly?
+      // if (storedToken.expired()) {
+      logger.debug("token had expired = old was " + util.inspect(storedToken))
+      // refresh token
+      const newToken = await storedToken.refresh();
+      logger.debug("New token is " + util.inspect(newToken))
 
-        // Update stored token
-        return newToken.token.access_token;
-      } else {
-        console.error("getRefreshedTokenAsync token not expired")
-      }
+      // Update stored token
+      return newToken.token.access_token;
+      // } else {
+      //   console.error("getRefreshedTokenAsync token not expired")
+      // }
 
       // Token still valid, just return it
       return storedToken.token.access_token;
@@ -75,7 +71,7 @@ module.exports = {
       var req = https.request(options, (res) => {
         res.on('data', (data) => {
           const response = JSON.parse(new String(data))
-          if(response.error) {
+          if (response.error) {
             reject(response)
           }
           resolve(response)

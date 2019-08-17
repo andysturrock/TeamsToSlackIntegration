@@ -27,7 +27,6 @@ module.exports = {
 
   getMessagesAfterAsync: async function (accessToken, teamId, channelId, date) {
     const allMessages = await this.getMessagesAsync(accessToken, teamId, channelId)
-    logger.error("getMessagesAfterAsync allMessages = " + allMessages)
     if (!date) {
       return allMessages
     }
@@ -108,19 +107,12 @@ async function getChannelsInTeamAsync(client, teamId) {
 async function getMessagesInChannelAsync(client, teamId, channelId) {
   let messages = [];
 
-  try{
-  logger.error("About to call api")
+  const url = `/teams/${teamId}/channels/${channelId}/messages`
   let messagesData = await client
-    .api(`/teams/${teamId}/channels/${channelId}/messages`)
+    .api(url)
     .version('beta')
     .top(PAGE_SIZE)
     .get();
-  logger.error("Back from API: " + util.inspect(messagesData))
-  } catch(error) {
-    console.error("Error: " + util.inspect(error))
-    throw error
-  }
-
 
   messages = messages.concat(messagesData.value)
 
@@ -185,12 +177,10 @@ function getAuthenticatedClient(accessToken) {
     // Use the provided access token to authenticate
     // requests
     authProvider: (done) => {
-      logger.error("getAuthenticatedClient.authProvider accessToken = " + util.inspect(accessToken))    
       done(null, accessToken);
     },
-    debugLogging: true
+    // debugLogging: true
   });
 
-  logger.error("Client = " + util.inspect(client))
   return client;
 }

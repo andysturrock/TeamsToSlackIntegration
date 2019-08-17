@@ -41,7 +41,7 @@ module.exports = {
       }
     }
     catch (error) {
-      logger.error("postMessageAsync(): " + error.stack)
+      logger.error("postMessageAsync(): " + util.inspect(error))
     }
   }
 };

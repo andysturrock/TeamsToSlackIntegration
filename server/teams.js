@@ -28,7 +28,7 @@ module.exports = {
       }
       alreadyPollingForTeamAndChannel.set(`teamId/teamsChannelId`, true)
       logger.info(`Polling for messages in ${teamName}/${teamsChannelName}...`)
-      
+
       logger.debug(`Looking for Slack channel for ${teamId}/${teamsChannelId}`)
       const slackChannelId = channelMapping.slackChannel.id;
 

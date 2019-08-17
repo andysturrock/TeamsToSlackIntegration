@@ -83,6 +83,8 @@ const checkForMessagesInMappings = async () => {
         logger.error("arse()\n" + util.inspect(err) + "\n" + err.stack)
     }
 }
-setInterval(checkForMessagesInMappings, 5000);
+// setInterval(checkForMessagesInMappings, 5000);
+checkForMessagesInMappings()
+
 
 module.exports = app;

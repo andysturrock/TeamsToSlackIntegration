@@ -81,6 +81,22 @@ module.exports = {
       logger.error("getRepliesAsync() %o", error)
       throw (error)
     }
+  },
+
+  postMessageAsync: async function (accessToken, teamId, channelId, message) {
+    const client = getAuthenticatedClient(accessToken);
+
+    const chatMessage = {
+      "subject": "From Slack",
+      "body": { content: message },
+    }
+    const response = await client
+      .api(`/teams/${teamId}/channels/${channelId}/messages`)
+      .version('beta')
+      .post(chatMessage);
+
+    logger.info("response = " + util.inspect(response))
+    return response;
   }
 };
 
@@ -179,7 +195,7 @@ function getAuthenticatedClient(accessToken) {
     authProvider: (done) => {
       done(null, accessToken);
     },
-    // debugLogging: true
+    debugLogging: true
   });
 
   return client;

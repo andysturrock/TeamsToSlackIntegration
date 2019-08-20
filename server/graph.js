@@ -89,6 +89,18 @@ module.exports = {
     const chatMessage = {
       "subject": "From Slack",
       "body": { content: message },
+      "from": {
+        device: null,
+        user: null,
+        conversation: null,
+        application:
+        {
+          id: 'ace0263e-0db8-469b-b4d7-42e7eae09038',
+          displayName: 'slackbot',
+          applicationIdentityType: 'bot'
+        }
+      }
+
     }
     const response = await client
       .api(`/teams/${teamId}/channels/${channelId}/messages`)
@@ -195,7 +207,7 @@ function getAuthenticatedClient(accessToken) {
     authProvider: (done) => {
       done(null, accessToken);
     },
-    debugLogging: true
+    // debugLogging: true
   });
 
   return client;

@@ -1,42 +1,51 @@
-function connectToSlackRTM() {
+'use strict'
+const util = require('util')
+const logger = require('pino')()
 
+const { RTMClient } = require('@slack/rtm-api');
 
-  const { RTMClient } = require('@slack/rtm-api');
+module.exports = {
+  connectToSlackRTMAsync: async function (token) {
 
-  // An access token (from your Slack app or custom integration - usually xoxb)
-  const token = process.env.SLACK_TOKEN;
+    // The client is initialized and then started to get an active connection to the platform
+    const rtm = new RTMClient(token);
+    await rtm.start()
 
-  // The client is initialized and then started to get an active connection to the platform
-  const rtm = new RTMClient(token);
-  rtm.start()
-    .catch(console.error);
+    rtm.on('disconnecting', (event) => {
+      // The argument is the event as shown in the reference docs.
+      // For example, https://api.slack.com/events/user_typing
+      logger.info("disconnecting:" + util.inspect(event));
+    })
 
-  // Calling `rtm.on(eventName, eventHandler)` allows you to handle events (see: https://api.slack.com/events)
-  // When the connection is active, the 'ready' event will be triggered
-  rtm.on('ready', async () => {
+    rtm.on('disconnected', (event) => {
+      // The argument is the event as shown in the reference docs.
+      // For example, https://api.slack.com/events/user_typing
+      logger.info("disconnected:" + util.inspect(event));
+    })
 
-    try {
-      // Sending a message requires a channel ID, a DM ID, an MPDM ID, or a group ID
-      // The following value is used as an example
-      const conversationId = 'C1232456';
+    // Calling `rtm.on(eventName, eventHandler)` allows you to handle events (see: https://api.slack.com/events)
+    // When the connection is active, the 'ready' event will be triggered
+    rtm.on('ready', async () => {
 
-      // The RTM client can send simple string messages
-      const res = await rtm.sendMessage('Hello there', conversationId);
+      try {
+        // Sending a message requires a channel ID, a DM ID, an MPDM ID, or a group ID
+        // The following value is used as an example
+        const conversationId = 'C7F9N62KS'
 
-      // `res` contains information about the sent message
-      console.log('Message sent: ', res.ts);
-    }
-    catch (error) {
-      console.log("Error in Slack RTM API: " + error.stack)
-    }
-  });
+        // The RTM client can send simple string messages
+        const res = await rtm.sendMessage('Hello there', conversationId);
 
-  // After the connection is open, your app will start receiving other events.
-  rtm.on('user_typing', (event) => {
-    // The argument is the event as shown in the reference docs.
-    // For example, https://api.slack.com/events/user_typing
-    console.log(event);
-  })
+        // `res` contains information about the sent message
+        logger.info('Message sent: ' + util.inspect(res));
+      }
+      catch (error) {
+        logger.error("Error in Slack RTM API: " + error.stack)
+      }
+    });
 
+    rtm.on('message', (event) => {
+      logger.info(event);
+    });
+  }
 
 }

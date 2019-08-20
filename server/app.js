@@ -73,36 +73,53 @@ app.use(function (err, req, res, next) {
 const oauth2 = require('./oauth/oauth.js')
 const channelMaps = require('./channel-maps')
 const teams = require('./teams');
+const graph = require('./graph');
 const checkForMessagesInMappings = async () => {
     try {
         const channelMappings = await channelMaps.getMapsAsync();
         for (let channelMapping of channelMappings) {
             await teams.pollTeamsForMessagesAsync(channelMapping)
+            // const oauthToken = oauth2.accessToken.create(channelMapping.mappingOwner.token);
+            // const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
+            // const res = await graph.postMessageAsync(accessToken,
+            //     channelMapping.team.id,
+            //     channelMapping.teamsChannel.id,
+            //     "Hello from the bot")
+            // logger.error("res = " + util.inspect(res))
         }
     } catch (err) {
         logger.error("arse()\n" + util.inspect(err) + "\n" + err.stack)
     }
 }
-// setInterval(checkForMessagesInMappings, 5000);
+setInterval(checkForMessagesInMappings, 5000);
 // checkForMessagesInMappings()
 
 const tokens = require('./oauth/tokens')
 const cock = async () => {
     const botToken = await tokens.getBotTokenAsync()
     const access_token = botToken.access_token
-    console.error("Bot access token: " + util.inspect(access_token))
     try {
         const teamsChannelId = '19:fb442837eaa74fd4ae81ed89c5e39cf6@thread.skype'
-        // const messageId = '1566289708593'
-        const messageId = '1566293665653'
-        
-        await teams.postBotReplyAsync(access_token, teamsChannelId, messageId, "using teams function")
-        await teams.postBotMessageAsync(access_token, teamsChannelId, messageId, "new message using teams function")
+        const messageId = '1566313742985'
+
+        await teams.postBotReplyAsync(access_token, teamsChannelId, messageId, "reply using teams function")
+        await teams.postBotMessageAsync(access_token, teamsChannelId, "new message using teams function")
     }
     catch (error) {
         console.error("Arghhg error: " + util.inspect(error))
     }
 }
-cock()
+// cock()
+
+const slack = require('./slack-rtm')
+const nob = async () => {
+    try {
+        await slack.connectToSlackRTMAsync(process.env.SLACK_TOKEN)
+    } catch (error) {
+        logger.error(error.stack)
+    }
+}
+// nob()
+
 
 module.exports = app;

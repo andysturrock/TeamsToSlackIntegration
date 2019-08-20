@@ -68,8 +68,9 @@ module.exports = {
           logger.debug("Message body: " + util.inspect(message.body))
           logger.debug("Message created time: " + messageCreatedDateTime)
           logger.error("Message.from: " + util.inspect(message.from))
-          if (message.from.application && message.from.application.id == process.env.SLACKBOT_APP_ID) {
-            logger.error("Saw a message from me - " + message.from.application.displayName)
+          logger.error("Message:" + util.inspect(message))
+          if (message.from.application) {
+            logger.error("Saw a message from an application - " + message.from.application.displayName)
           } else {
             const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
             const slackMessageId = await slackWeb.postMessageAsync(slackMessage, slackChannelId)
@@ -88,25 +89,25 @@ module.exports = {
 
       // Now get all the replies.  Because of the crappy Teams/Graph API, we'll need to check every single
       // message individually to see whether it's got a reply we haven't seen yet.
-      await pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, slackChannelId)
+      await pollTeamsForRepliesAsync(accessToken, channelMapping)
 
     } catch (error) {
       logger.error("Error polling for Teams messages:" + util.inspect(error))
     } finally {
       logger.info(`Done polling for messages in ${teamName}/${teamsChannelName}.`)
-      alreadyPollingForTeamAndChannel.set(`teamId/teamsChannelId`, true)
+      alreadyPollingForTeamAndChannel.set(`teamId/teamsChannelId`, false)
     }
   },
 
-  postBotReplyAsync: async function (token, teamsChannelId, messageId, message) {
-    _postBotMessage(token, teamsChannelId, messageId, message)
+  postBotReplyAsync: async function (token, teamsChannelId, replyToId, message) {
+    _postBotMessage(token, teamsChannelId, replyToId, message)
   },
-  postBotMessageAsync: async function (token, teamsChannelId, messageId, message) {
+  postBotMessageAsync: async function (token, teamsChannelId, message) {
     _postBotMessage(token, teamsChannelId, null, message)
   }
 }
 
-async function _postBotMessage(token, teamsChannelId, messageId, message) {
+async function _postBotMessage(token, teamsChannelId, replyToId, message) {
   return new Promise((resolve, reject) => {
 
     const data = JSON.stringify({
@@ -114,8 +115,8 @@ async function _postBotMessage(token, teamsChannelId, messageId, message) {
       "text": message
     })
 
-    const path = messageId ?
-      `/uk/v3/conversations/${teamsChannelId};messageid=${messageId}/activities/` :
+    const path = replyToId ?
+      `/uk/v3/conversations/${teamsChannelId};messageid=${replyToId}/activities/` :
       `/uk/v3/conversations/${teamsChannelId}/activities/`
     const options = {
       hostname: 'smba.trafficmanager.net',
@@ -133,7 +134,7 @@ async function _postBotMessage(token, teamsChannelId, messageId, message) {
           logger.error("Error posting bot reply: " + util.inspect(response.error))
           reject(response)
         }
-
+        logger.error("Bot reply: " + util.inspect(response))
         resolve(response)
       })
     })
@@ -147,8 +148,15 @@ async function _postBotMessage(token, teamsChannelId, messageId, message) {
   })
 }
 
-async function pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, slackChannelId) {
-  logger.info("Polling Teams for replies...")
+async function pollTeamsForRepliesAsync(accessToken, channelMapping) {
+
+  const teamId = channelMapping.team.id
+  const teamsChannelId = channelMapping.teamsChannel.id
+  const teamName = channelMapping.team.name
+  const teamsChannelName = channelMapping.teamsChannel.name
+  const slackChannelId = channelMapping.slackChannel.id
+
+  logger.info(`Polling Teams for replies in ${teamName}/${teamsChannelName}...`)
   const allMessageIds = await channelMaps.getAllMessageIdsAsync(teamId, teamsChannelId)
   logger.debug("allMessageIds = " + util.inspect(allMessageIds))
   for (let messageId of allMessageIds) {
@@ -164,8 +172,8 @@ async function pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, sla
 
       const replyCreatedDateTime = new Date(reply.createdDateTime)
 
-      if (reply.from.application && reply.from.application.id == process.env.SLACKBOT_APP_ID) {
-        logger.error("Saw a reply from me - " + reply.from.application.displayName)
+      if (reply.from.application) {
+        logger.error("Saw a reply from an application - " + reply.from.application.displayName)
       } else {
         // Find the Slack message id for the original message
         const slackMessageId = await channelMaps.getSlackMessageIdAsync(teamId, teamsChannelId, reply.replyToId)
@@ -186,6 +194,7 @@ async function pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, sla
     logger.debug("Setting last reply time to " + lastReplyTime)
     await channelMaps.setLastReplyTimeAsync(teamId, teamsChannelId, messageId, lastReplyTime)
   }
+  logger.info(`Done polling for replies in ${teamName}/${teamsChannelName}.`)
 }
 
 

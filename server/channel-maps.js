@@ -22,52 +22,52 @@ function createTeamsChannelKey(teamId, teamsChannelId) {
     return `${teamId}/${teamsChannelId}`
 }
 
-function splitTeamsChannelKey(compoundKey) {
-    let keyArray = compoundKey.split('/')
-    return { teamId: keyArray[0], teamsChannelId: keyArray[1] }
-}
+// function splitTeamsChannelKey(compoundKey) {
+//     let keyArray = compoundKey.split('/')
+//     return { teamId: keyArray[0], teamsChannelId: keyArray[1] }
+// }
 
 function createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId) {
     return `${teamId}/${teamsChannelId}/${teamsMessageId}`
 }
 
-function splitTeamsMessageKey(compoundKey) {
-    let keyArray = compoundKey.split('/')
-    return { teamId: keyArray[0], teamsChannelId: keyArray[1], teamsMessageId: keyArray[2] }
-}
+// function splitTeamsMessageKey(compoundKey) {
+//     let keyArray = compoundKey.split('/')
+//     return { teamId: keyArray[0], teamsChannelId: keyArray[1], teamsMessageId: keyArray[2] }
+// }
 
 module.exports = {
-    mapChannelsAsync: async function (teamId, teamsChannelId, slackChannelId) {
-        console.trace("mapChannelsAsync")
-        // await setAsync("TeamsChannel2SlackChannel/" + createTeamsChannelKey(teamId, teamsChannelId), slackChannelId)
-        // await setAsync("SlackChannel2TeamsChannel/" + slackChannelId, createTeamsChannelKey(teamId, teamsChannelId))
-    },
+    // mapChannelsAsync: async function (teamId, teamsChannelId, slackChannelId) {
+    //     console.trace("mapChannelsAsync")
+    //     // await setAsync("TeamsChannel2SlackChannel/" + createTeamsChannelKey(teamId, teamsChannelId), slackChannelId)
+    //     // await setAsync("SlackChannel2TeamsChannel/" + slackChannelId, createTeamsChannelKey(teamId, teamsChannelId))
+    // },
 
-    getSlackChannelAsync: async function (teamId, teamsChannelId) {
-        return await getAsync("TeamsChannel2SlackChannel/" + createTeamsChannelKey(teamId, teamsChannelId))
-    },
+    // getSlackChannelAsync: async function (teamId, teamsChannelId) {
+    //     return await getAsync("TeamsChannel2SlackChannel/" + createTeamsChannelKey(teamId, teamsChannelId))
+    // },
 
-    getTeamsChannelAsync: async function (slackChannelId) {
-        return await getAsync("SlackChannel2TeamsChannel/" + slackChannelId)
-    },
+    // getTeamsChannelAsync: async function (slackChannelId) {
+    //     return await getAsync("SlackChannel2TeamsChannel/" + slackChannelId)
+    // },
 
     // Return list of Teams channels in tuple-like object literals:
     // {teamId: abc, teamsChannelId: xyz}
-    getTeamsChannelsAsync: async function () {
-        return new Promise((resolve, reject) => {
-            client.keys('TeamsChannel2SlackChannel/*', (err, keys) => {
-                if (err) {
-                    reject(err)
-                }
-                let channels = []
-                for (let compoundKey of keys) {
-                    compoundKey = compoundKey.replace('TeamsChannel2SlackChannel/', '')
-                    channels.push(splitTeamsChannelKey(compoundKey))
-                }
-                resolve(channels)
-            })
-        })
-    },
+    // getTeamsChannelsAsync: async function () {
+    //     return new Promise((resolve, reject) => {
+    //         client.keys('TeamsChannel2SlackChannel/*', (err, keys) => {
+    //             if (err) {
+    //                 reject(err)
+    //             }
+    //             let channels = []
+    //             for (let compoundKey of keys) {
+    //                 compoundKey = compoundKey.replace('TeamsChannel2SlackChannel/', '')
+    //                 channels.push(splitTeamsChannelKey(compoundKey))
+    //             }
+    //             resolve(channels)
+    //         })
+    //     })
+    // },
 
     setLastMessageTimeAsync: async function (teamId, teamsChannelId, date) {
         await setAsync("LastMessageTime/" + createTeamsChannelKey(teamId, teamsChannelId), JSON.stringify(date))

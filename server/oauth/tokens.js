@@ -85,6 +85,45 @@ module.exports = {
       req.write(postData);
       req.end();
     })
+  },
+
+  getBotTokenAsync: async function() {
+    return new Promise((resolve, reject) => {
+
+      const postData = querystring.stringify({
+        'grant_type': 'client_credentials',
+        'client_id': process.env.BOT_APP_ID,
+        'client_secret': process.env.BOT_APP_PASSWORD,
+        'scope': `${process.env.BOT_SCOPES}`
+      });
+
+      const options = {
+        hostname: 'login.microsoftonline.com',
+        method: 'POST',
+        path: `/botframework.com/oauth2/v2.0/token`,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': postData.length
+        }
+      };
+
+      var req = https.request(options, (res) => {
+        res.on('data', (data) => {
+          const response = JSON.parse(new String(data))
+          if (response.error) {
+            reject(response)
+          }
+          resolve(response)
+        });
+      });
+
+      req.on('error', (error) => {
+        reject(error)
+      });
+
+      req.write(postData);
+      req.end();
+    })
   }
 
 };

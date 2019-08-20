@@ -1,6 +1,7 @@
 'use strict'
 const util = require('util')
 const logger = require('pino')()
+const https = require('https');
 
 const graph = require('./graph.js');
 const channelMaps = require('./channel-maps')
@@ -66,11 +67,15 @@ module.exports = {
           logger.debug("message id: " + util.inspect(message.id))
           logger.debug("Message body: " + util.inspect(message.body))
           logger.debug("Message created time: " + messageCreatedDateTime)
-          logger.debug("Message from: " + util.inspect(message.from.user))
-          const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
-          const slackMessageId = await slackWeb.postMessageAsync(slackMessage, slackChannelId)
-          logger.debug(`slackMessageId = ${slackMessageId}`)
-          await channelMaps.setSlackMessageIdAsync(teamId, teamsChannelId, message.id, slackMessageId)
+          logger.error("Message.from: " + util.inspect(message.from))
+          if (message.from.application && message.from.application.id == process.env.SLACKBOT_APP_ID) {
+            logger.error("Saw a message from me - " + message.from.application.displayName)
+          } else {
+            const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
+            const slackMessageId = await slackWeb.postMessageAsync(slackMessage, slackChannelId)
+            logger.debug(`slackMessageId = ${slackMessageId}`)
+            await channelMaps.setSlackMessageIdAsync(teamId, teamsChannelId, message.id, slackMessageId)
+          }
 
           // Keep track of the latest message we've seen             
           if (messageCreatedDateTime > lastMessageTime) {
@@ -91,7 +96,55 @@ module.exports = {
       logger.info(`Done polling for messages in ${teamName}/${teamsChannelName}.`)
       alreadyPollingForTeamAndChannel.set(`teamId/teamsChannelId`, true)
     }
+  },
+
+  postBotReplyAsync: async function (token, teamsChannelId, messageId, message) {
+    _postBotMessage(token, teamsChannelId, messageId, message)
+  },
+  postBotMessageAsync: async function (token, teamsChannelId, messageId, message) {
+    _postBotMessage(token, teamsChannelId, null, message)
   }
+}
+
+async function _postBotMessage(token, teamsChannelId, messageId, message) {
+  return new Promise((resolve, reject) => {
+
+    const data = JSON.stringify({
+      "type": "message",
+      "text": message
+    })
+
+    const path = messageId ?
+      `/uk/v3/conversations/${teamsChannelId};messageid=${messageId}/activities/` :
+      `/uk/v3/conversations/${teamsChannelId}/activities/`
+    const options = {
+      hostname: 'smba.trafficmanager.net',
+      method: 'POST',
+      path: path,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    }
+    var req = https.request(options, (res) => {
+      res.on('data', (data) => {
+        const response = JSON.parse(new String(data))
+        if (response.error) {
+          logger.error("Error posting bot reply: " + util.inspect(response.error))
+          reject(response)
+        }
+
+        resolve(response)
+      })
+    })
+
+    req.on('error', (error) => {
+      logger.error("Error posting bot reply: " + util.inspect(error))
+      reject(error)
+    })
+    req.write(data);
+    req.end();
+  })
 }
 
 async function pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, slackChannelId) {
@@ -110,15 +163,20 @@ async function pollTeamsForRepliesAsync(accessToken, teamId, teamsChannelId, sla
       logger.debug("reply from: " + util.inspect(reply.from.user))
 
       const replyCreatedDateTime = new Date(reply.createdDateTime)
-      // Find the Slack message id for the original message
-      const slackMessageId = await channelMaps.getSlackMessageIdAsync(teamId, teamsChannelId, reply.replyToId)
-      logger.debug(`slackMessageId for reply = ${slackMessageId}`)
-      const slackReply = `From Teams (${reply.from.user.displayName}): ${reply.body.content}`
-      // Now post the reply to the slack message thread
-      // Don't care about the Slack Message ID of this post as we just post back to the 
-      // parent each time.  In fact the API reference https://api.slack.com/methods/chat.postMessage
-      // explicitly says "Avoid using a reply's ts value; use its parent instead."
-      await slackWeb.postMessageAsync(slackReply, slackChannelId, slackMessageId)
+
+      if (reply.from.application && reply.from.application.id == process.env.SLACKBOT_APP_ID) {
+        logger.error("Saw a reply from me - " + reply.from.application.displayName)
+      } else {
+        // Find the Slack message id for the original message
+        const slackMessageId = await channelMaps.getSlackMessageIdAsync(teamId, teamsChannelId, reply.replyToId)
+        logger.debug(`slackMessageId for reply = ${slackMessageId}`)
+        const slackReply = `From Teams (${reply.from.user.displayName}): ${reply.body.content}`
+        // Now post the reply to the slack message thread
+        // Don't care about the Slack Message ID of this post as we just post back to the 
+        // parent each time.  In fact the API reference https://api.slack.com/methods/chat.postMessage
+        // explicitly says "Avoid using a reply's ts value; use its parent instead."
+        await slackWeb.postMessageAsync(slackReply, slackChannelId, slackMessageId)
+      }
 
       // Keep track of the latest message we've seen             
       if (replyCreatedDateTime > lastReplyTime) {

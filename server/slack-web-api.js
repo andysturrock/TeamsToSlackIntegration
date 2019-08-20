@@ -11,6 +11,7 @@ function connectToSlackWebAPI() {
   const { WebClient } = require('@slack/web-api');
 
   // Read a token from the environment variables
+  // TODO - read from mapping
   const token = process.env.SLACK_TOKEN;
 
   // Initialize

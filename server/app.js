@@ -84,7 +84,25 @@ const checkForMessagesInMappings = async () => {
     }
 }
 // setInterval(checkForMessagesInMappings, 5000);
-checkForMessagesInMappings()
+// checkForMessagesInMappings()
 
+const tokens = require('./oauth/tokens')
+const cock = async () => {
+    const botToken = await tokens.getBotTokenAsync()
+    const access_token = botToken.access_token
+    console.error("Bot access token: " + util.inspect(access_token))
+    try {
+        const teamsChannelId = '19:fb442837eaa74fd4ae81ed89c5e39cf6@thread.skype'
+        // const messageId = '1566289708593'
+        const messageId = '1566293665653'
+        
+        await teams.postBotReplyAsync(access_token, teamsChannelId, messageId, "using teams function")
+        await teams.postBotMessageAsync(access_token, teamsChannelId, messageId, "new message using teams function")
+    }
+    catch (error) {
+        console.error("Arghhg error: " + util.inspect(error))
+    }
+}
+cock()
 
 module.exports = app;

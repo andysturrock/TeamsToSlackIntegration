@@ -72,7 +72,8 @@ module.exports = {
           if (message.from.application) {
             logger.error("Saw a message from an application - " + message.from.application.displayName)
           } else {
-            const slackMessage = `From Teams (${message.from.user.displayName}): ${message.body.content}`
+            const webUrl = `<${message.webUrl}|Teams>`
+            const slackMessage = `${message.from.user.displayName} from ${webUrl}: ${message.body.content}`
             const slackMessageId = await slackWeb.postMessageAsync(slackMessage, slackChannelId)
             logger.debug(`slackMessageId = ${slackMessageId}`)
             await channelMaps.setSlackMessageIdAsync(teamId, teamsChannelId, message.id, slackMessageId)
@@ -112,7 +113,8 @@ async function _postBotMessage(token, teamsChannelId, replyToId, message) {
 
     const data = JSON.stringify({
       "type": "message",
-      "text": message
+      "text": message,
+      "textFormat": "xml"
     })
 
     const path = replyToId ?
@@ -143,6 +145,8 @@ async function _postBotMessage(token, teamsChannelId, replyToId, message) {
       logger.error("Error posting bot reply: " + util.inspect(error))
       reject(error)
     })
+
+    console.error("posting: " + util.inspect(data))
     req.write(data);
     req.end();
   })

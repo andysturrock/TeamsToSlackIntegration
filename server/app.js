@@ -79,19 +79,12 @@ const checkForMessagesInMappings = async () => {
         const channelMappings = await channelMaps.getMapsAsync();
         for (let channelMapping of channelMappings) {
             await teams.pollTeamsForMessagesAsync(channelMapping)
-            // const oauthToken = oauth2.accessToken.create(channelMapping.mappingOwner.token);
-            // const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
-            // const res = await graph.postMessageAsync(accessToken,
-            //     channelMapping.team.id,
-            //     channelMapping.teamsChannel.id,
-            //     "Hello from the bot")
-            // logger.error("res = " + util.inspect(res))
         }
     } catch (err) {
         logger.error("arse()\n" + util.inspect(err) + "\n" + err.stack)
     }
 }
-// setInterval(checkForMessagesInMappings, 5000);
+setInterval(checkForMessagesInMappings, 5000);
 // checkForMessagesInMappings()
 
 const tokens = require('./oauth/tokens')

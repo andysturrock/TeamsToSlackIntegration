@@ -87,7 +87,9 @@ module.exports = {
     },
 
     setSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId, slackMessageId) {
-        await setAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId), slackMessageId)
+        await setAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId),
+            slackMessageId,
+            "EX", 60)
     },
 
     setLastReplyTimeAsync: async function (teamId, teamsChannelId, teamsMessageId, date) {

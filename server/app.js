@@ -91,7 +91,7 @@ const checkForMessagesInMappings = async () => {
         logger.error("arse()\n" + util.inspect(err) + "\n" + err.stack)
     }
 }
-setInterval(checkForMessagesInMappings, 5000);
+// setInterval(checkForMessagesInMappings, 5000);
 // checkForMessagesInMappings()
 
 const tokens = require('./oauth/tokens')
@@ -111,15 +111,20 @@ const cock = async () => {
 }
 // cock()
 
-const slack = require('./slack-rtm')
-const nob = async () => {
+const SlackToTeamsMapping = require('./slack-to-teams-mapping')
+const createInitialSlackToTeamsMappings = async () => {
     try {
-        await slack.connectToSlackRTMAsync(process.env.SLACK_TOKEN)
+        const channelMappings = await channelMaps.getMapsAsync();
+        for (let channelMapping of channelMappings) {
+            const slackToTeamsMapping = new SlackToTeamsMapping(channelMapping)
+            await slackToTeamsMapping.initAsync()
+        }
     } catch (error) {
         logger.error(error.stack)
     }
 }
-// nob()
+createInitialSlackToTeamsMappings()
+
 
 
 module.exports = app;

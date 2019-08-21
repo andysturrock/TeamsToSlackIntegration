@@ -47,16 +47,15 @@ router.post('/', async function (req, res) {
       && channelMapping.teamsChannel && channelMapping.teamsChannel.id && channelMapping.teamsChannel.name
       && channelMapping.workspace && channelMapping.workspace.id && channelMapping.workspace.name
       && channelMapping.slackChannel && channelMapping.slackChannel.id && channelMapping.slackChannel.name
+      && channelMapping.slackBotToken
       && channelMapping.mappingOwner && channelMapping.mappingOwner.id && channelMapping.mappingOwner.name
       && channelMapping.mappingOwner.token;
     if (!valid) {
       logger.error("Missing fields in body", req.body)
       res.status(200).json({ error: 'One or more missing fields' });
     } else {
-      console.error("get() original token = " + util.inspect(channelMapping.mappingOwner.token))
       // Get the on-behalf-of token
       const onBehalfOfToken = await tokens.getOnBehalfOfTokenAsync(channelMapping.mappingOwner.token)
-      console.error("get() OBO token = " + util.inspect(onBehalfOfToken))
       channelMapping.mappingOwner.token = onBehalfOfToken
       await channelMaps.saveMapAsync(channelMapping)
       res.status(200).json({ result: 'success' });

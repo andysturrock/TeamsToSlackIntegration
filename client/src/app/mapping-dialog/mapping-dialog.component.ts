@@ -18,7 +18,6 @@ export class MappingDialogComponent {
   private teams = null;
   private teamsChannels = null;
   private slackChannels = null;
-  private slackBotToken = null;
 
   constructor(
     public dialogRef: MatDialogRef<MappingDialogComponent>,
@@ -41,8 +40,8 @@ export class MappingDialogComponent {
   }
 
   private async onWorkspaceSearch() {
-    this.channelMapping.workspace = await this.dataService.getWorkspaceAsync(this.slackBotToken);
-    this.slackChannels = await this.dataService.getSlackChannels(this.slackBotToken)
+    this.channelMapping.workspace = await this.dataService.getWorkspaceAsync(this.channelMapping.slackBotToken);
+    this.slackChannels = await this.dataService.getSlackChannels(this.channelMapping.slackBotToken)
   }
 
   private enableSubmit() {
@@ -58,6 +57,7 @@ export class MappingDialogComponent {
   }
 
   private onSubmit(): void {
+    console.error("this.channelMapping = " + util.inspect(this.channelMapping))
     this.event.emit({ data: this.channelMapping });
     this.dialogRef.close();
   }

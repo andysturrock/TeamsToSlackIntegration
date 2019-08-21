@@ -7,7 +7,8 @@ module.exports = class ChannelMapping {
         this.team = { id: null, name: null };
         this.teamsChannel = { id: null, name: null };
         this.workspace = { id: null, name: null };
-        this.slackChannel = { id: null, name: null };
+        this.slackChannel = { id: null, name: null};
+        this.slackBotToken = null;
         this.mappingOwner = { id: null, name: null, token: null };
 // logger.error("ctor parsing:" + json)
         if (json) {
@@ -20,6 +21,7 @@ module.exports = class ChannelMapping {
             this.workspace.name = jsonAny.workspace.name;
             this.slackChannel.id = jsonAny.slackChannel.id;
             this.slackChannel.name = jsonAny.slackChannel.name;
+            this.slackBotToken = jsonAny.slackBotToken;
             this.mappingOwner.id = jsonAny.mappingOwner.id;
             this.mappingOwner.name = jsonAny.mappingOwner.name;
             this.mappingOwner.token = jsonAny.mappingOwner.token;

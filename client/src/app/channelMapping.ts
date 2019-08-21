@@ -3,6 +3,7 @@ export class ChannelMapping {
   teamsChannel: { id: string, name: string };
   workspace: { id: string, name: string };
   slackChannel: { id: string, name: string };
+  slackBotToken: string;
   mappingOwner: { id: string, name: string, token: string };
 
   constructor(json?: string) {
@@ -11,6 +12,7 @@ export class ChannelMapping {
       this.teamsChannel = { id: null, name: null };
       this.workspace = { id: null, name: null };
       this.slackChannel = { id: null, name: null };
+      this.slackBotToken = null;
       this.mappingOwner = { id: null, name: null, token: null };
     }
     else {
@@ -19,6 +21,7 @@ export class ChannelMapping {
       this.teamsChannel = jsonAny.teamsChannel;
       this.workspace = jsonAny.workspace;
       this.slackChannel = jsonAny.slackChannel;
+      this.slackBotToken = jsonAny.slackBotToken;
       this.mappingOwner = jsonAny.mappingOwner;
     }
   }

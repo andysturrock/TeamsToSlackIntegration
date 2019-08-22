@@ -84,25 +84,8 @@ const checkForMessagesInMappings = async () => {
         logger.error("arse()\n" + util.inspect(err) + "\n" + err.stack)
     }
 }
-setInterval(checkForMessagesInMappings, 5000);
+// setInterval(checkForMessagesInMappings, 5000);
 // checkForMessagesInMappings()
-
-const tokens = require('./oauth/tokens')
-const cock = async () => {
-    const botToken = await tokens.getBotTokenAsync()
-    const access_token = botToken.access_token
-    try {
-        const teamsChannelId = '19:fb442837eaa74fd4ae81ed89c5e39cf6@thread.skype'
-        const messageId = '1566313742985'
-
-        await teams.postBotReplyAsync(access_token, teamsChannelId, messageId, "reply using teams function")
-        await teams.postBotMessageAsync(access_token, teamsChannelId, "new message using teams function")
-    }
-    catch (error) {
-        console.error("Arghhg error: " + util.inspect(error))
-    }
-}
-// cock()
 
 const SlackToTeamsMapping = require('./slack-to-teams-mapping')
 const createInitialSlackToTeamsMappings = async () => {
@@ -116,8 +99,20 @@ const createInitialSlackToTeamsMappings = async () => {
         logger.error(error.stack)
     }
 }
-createInitialSlackToTeamsMappings()
+// createInitialSlackToTeamsMappings()
 
-
+const TeamsToSlackMapping = require('./teams-to-slack-mapping')
+const createInitialTeamsToSlackMappings = async () => {
+    try {
+        const channelMappings = await channelMaps.getMapsAsync();
+        for (let channelMapping of channelMappings) {
+            const teamsToSlackMapping = new TeamsToSlackMapping(channelMapping)
+            await teamsToSlackMapping.initAsync()
+        }
+    } catch (error) {
+        logger.error(error.stack)
+    }
+}
+createInitialTeamsToSlackMappings()
 
 module.exports = app;

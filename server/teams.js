@@ -60,7 +60,7 @@ module.exports = {
           const messageCreatedDateTime = new Date(message.createdDateTime)
 
           // Put this in the set for use in reply processing later.
-          await channelMaps.addMessageIdAsync(teamId, teamsChannelId, message.id)
+          await channelMaps.addTeamsMessageIdAsync(teamId, teamsChannelId, message.id)
           // Set the last reply time to the message created date.  We'll check for replies from that time.
           await channelMaps.setLastReplyTimeAsync(teamId, teamsChannelId, message.id, messageCreatedDateTime)
 
@@ -161,7 +161,7 @@ async function pollTeamsForRepliesAsync(accessToken, channelMapping) {
   const slackChannelId = channelMapping.slackChannel.id
 
   logger.info(`Polling Teams for replies in ${teamName}/${teamsChannelName}...`)
-  const allMessageIds = await channelMaps.getAllMessageIdsAsync(teamId, teamsChannelId)
+  const allMessageIds = await channelMaps.getAllTeamsMessageIdsAsync(teamId, teamsChannelId)
   logger.debug("allMessageIds = " + util.inspect(allMessageIds))
   for (let messageId of allMessageIds) {
     logger.debug("Checking message " + messageId)

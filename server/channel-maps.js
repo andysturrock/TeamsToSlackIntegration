@@ -1,6 +1,7 @@
 'use strict'
 const util = require('util')
 const logger = require('pino')()
+const moment = require('moment');
 const ChannelMapping = require('./channel-mapping')
 
 // Pesist the following to redis:
@@ -14,60 +15,51 @@ const { promisify } = require('util');
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);
 const delAsync = promisify(client.del).bind(client);
-const saddAsync = promisify(client.sadd).bind(client);
-const smembersAsync = promisify(client.smembers).bind(client);
-const sremAsync = promisify(client.srem).bind(client);
+const zaddAsync = promisify(client.zadd).bind(client);
+const scanAsync = promisify(client.scan).bind(client);
+const zscanAsync = promisify(client.zscan).bind(client);
+const zremrangebyscore = promisify(client.zremrangebyscore).bind(client);
+const REDIS_SCAN_COUNT = 100
+const REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS=60
+// zrangebyscore "TeamsMessages/fb5cb1df-ad0a-4ae4-b979-21db4a48f68c/19:fb442837eaa74fd4ae81ed89c5e39cf6@thread.skype" 0 1566465060
 
 function createTeamsChannelKey(teamId, teamsChannelId) {
     return `${teamId}/${teamsChannelId}`
 }
 
-// function splitTeamsChannelKey(compoundKey) {
-//     let keyArray = compoundKey.split('/')
-//     return { teamId: keyArray[0], teamsChannelId: keyArray[1] }
-// }
-
 function createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId) {
     return `${teamId}/${teamsChannelId}/${teamsMessageId}`
 }
 
-// function splitTeamsMessageKey(compoundKey) {
-//     let keyArray = compoundKey.split('/')
-//     return { teamId: keyArray[0], teamsChannelId: keyArray[1], teamsMessageId: keyArray[2] }
-// }
+async function getAllKeys(pattern) {
+    let keys = []
+    let cursor = 0
+    while (true) {
+        const result = await scanAsync(cursor,
+            'MATCH', pattern,
+            'COUNT', REDIS_SCAN_COUNT)
+        cursor = result[0]
+        keys = keys.concat(result[1])
+        if (cursor == 0) {
+            break
+        }
+    }
+    return keys
+}
+
+async function deleteOldMessages() {
+    const now = moment().utc().unix()
+
+    const keys = await getAllKeys('TeamsMessages/*')
+    for (let key of keys) {
+        const numDeleted = await zremrangebyscore(key, 0, now)
+        logger.info(`Deleted ${numDeleted} messages from ${key}`)
+    }
+}
+// Run every 5 minutes
+setInterval(deleteOldMessages, 5000 * 60);
 
 module.exports = {
-    // mapChannelsAsync: async function (teamId, teamsChannelId, slackChannelId) {
-    //     console.trace("mapChannelsAsync")
-    //     // await setAsync("TeamsChannel2SlackChannel/" + createTeamsChannelKey(teamId, teamsChannelId), slackChannelId)
-    //     // await setAsync("SlackChannel2TeamsChannel/" + slackChannelId, createTeamsChannelKey(teamId, teamsChannelId))
-    // },
-
-    // getSlackChannelAsync: async function (teamId, teamsChannelId) {
-    //     return await getAsync("TeamsChannel2SlackChannel/" + createTeamsChannelKey(teamId, teamsChannelId))
-    // },
-
-    // getTeamsChannelAsync: async function (slackChannelId) {
-    //     return await getAsync("SlackChannel2TeamsChannel/" + slackChannelId)
-    // },
-
-    // Return list of Teams channels in tuple-like object literals:
-    // {teamId: abc, teamsChannelId: xyz}
-    // getTeamsChannelsAsync: async function () {
-    //     return new Promise((resolve, reject) => {
-    //         client.keys('TeamsChannel2SlackChannel/*', (err, keys) => {
-    //             if (err) {
-    //                 reject(err)
-    //             }
-    //             let channels = []
-    //             for (let compoundKey of keys) {
-    //                 compoundKey = compoundKey.replace('TeamsChannel2SlackChannel/', '')
-    //                 channels.push(splitTeamsChannelKey(compoundKey))
-    //             }
-    //             resolve(channels)
-    //         })
-    //     })
-    // },
 
     setLastMessageTimeAsync: async function (teamId, teamsChannelId, date) {
         await setAsync("LastMessageTime/" + createTeamsChannelKey(teamId, teamsChannelId), JSON.stringify(date))
@@ -89,7 +81,7 @@ module.exports = {
     setSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId, slackMessageId) {
         await setAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId),
             slackMessageId,
-            "EX", 60)
+            "EX", REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS)
     },
 
     setLastReplyTimeAsync: async function (teamId, teamsChannelId, teamsMessageId, date) {
@@ -101,13 +93,33 @@ module.exports = {
         return date ? new Date(JSON.parse(date)) : date
     },
 
-    getAllMessageIdsAsync: async function (teamId, teamsChannelId) {
-        const allMessageIds = await smembersAsync('TeamsMessages/' + createTeamsChannelKey(teamId, teamsChannelId))
-        return allMessageIds ? allMessageIds : []
+    // Use the redis sorted set functionality to add a TTL as the score.
+    // Then periodically sweep the set and delete all the entries with a TTL
+    // older than the current time.
+    getAllTeamsMessageIdsAsync: async function (teamId, teamsChannelId) {
+        const messageIds = []
+        let cursor = 0
+        while (true) {
+            const result = await zscanAsync('TeamsMessages/' + createTeamsChannelKey(teamId, teamsChannelId),
+                cursor,
+                'MATCH', '*',
+                'COUNT', REDIS_SCAN_COUNT)
+            cursor = result[0]
+            const messagesAndTtls = result[1]
+            for (let i = 0; i < messagesAndTtls.length; i += 2) {
+                messageIds.unshift(messagesAndTtls[i])
+            }
+            if (cursor == 0) {
+                break
+            }
+        }
+        return messageIds
     },
 
-    addMessageIdAsync: async function (teamId, teamsChannelId, messageId) {
-        await saddAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId), messageId)
+    addTeamsMessageIdAsync: async function (teamId, teamsChannelId, messageId) {
+        // TTL is time when we'll remove this element
+        const ttl = moment().add(REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS, 'seconds').utc().unix()
+        await zaddAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId), ttl, messageId)
     },
 
     saveMapAsync: async function (channelMapping) {

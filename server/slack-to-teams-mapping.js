@@ -6,6 +6,7 @@ const { RTMClient } = require('@slack/rtm-api');
 const { WebClient } = require('@slack/web-api');
 const tokens = require('./oauth/tokens')
 const teams = require('./teams')
+const slackWeb = require('./slack-web-api')
 
 class SlackToTeamsMapping {
 
@@ -16,13 +17,15 @@ class SlackToTeamsMapping {
     async initAsync() {
         this._rtmclient = new RTMClient(this._channelMapping.slackBotToken);
         const res = await this._rtmclient.start()
-        this._myId = res.self.id
+        this._myRtmId = res.self.id
 
-        this._rtmclient.on('ready', this._readyAsync.bind(this))
-        this._rtmclient.on('message', (event) => this._messageAsync(event))
-        this._rtmclient.on('disconnecting', (event) => this._disconnectingAsync(event))
+        this._rtmclient.on('ready', this._OnReadyAsync.bind(this))
+        this._rtmclient.on('message', (event) => this._onMessageAsync(event))
+        this._rtmclient.on('disconnecting', (event) => this._onDisconnectingAsync(event))
 
         this._webClient = new WebClient(this._channelMapping.slackBotToken);
+        const webId = await this._webClient.auth.test()
+        this._myWebId = webId.user_id
 
         const botToken = await tokens.getBotTokenAsync()
         this._teamsBotAccessToken = botToken.access_token
@@ -32,19 +35,19 @@ class SlackToTeamsMapping {
         await this._rtmclient.disconnect()
     }
 
-    async _readyAsync() {
+    async _OnReadyAsync() {
         try {
             const teams = this._channelMapping.team.name + "/" + this._channelMapping.teamsChannel.name
             const message = `Messages from this channel will be sent to ${teams} in Teams`
-            // const res = await this._rtm.sendMessage(message, this._channelMapping.slackChannel.id);
+            await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
         }
         catch (error) {
             logger.error("Error in Slack RTM API: " + error.stack)
         }
     }
 
-    async _messageAsync(event) {
-        logger.info('messageAsync for ' + this._channelMapping.slackChannel.name + " : " + util.inspect(event));
+    async _onMessageAsync(event) {
+        logger.info('_onMessageAsync for ' + this._channelMapping.slackChannel.name + " : " + util.inspect(event));
         if (event.hidden) {
             return
         }
@@ -57,13 +60,13 @@ class SlackToTeamsMapping {
         if (event.channel != this._channelMapping.slackChannel.id) {
             return
         }
-        // If we sent this message, then don't send it back to Teams - we'll go
-        // back and forth forever!
-        logger.info("My id is " + util.inspect(this._myId))
-        if (event.user == this._myId) {
-            logger.info('messageAsync I sent this:' + event.text);
+        
+        // Don't port bot messages to Teams.  Some of them will be from us anyway.
+        if (event.subtype == 'bot_message') {
+            logger.info('A bot sent:' + util.inspect(event))
         } else {
-            logger.info(`messageAsync ${event.user} sent this:` + event.text);
+            logger.info('A user sent:' + util.inspect(event))
+            logger.info(`_onMessageAsync ${event.user} sent this:` + event.text)
 
             if (event.thread_ts) {
                 logger.info("this is a reply - can't do those yet coz of stupid Teams API")
@@ -78,8 +81,8 @@ class SlackToTeamsMapping {
         }
     }
 
-    async _disconnectingAsync(event) {
-        logger.info('disconnectingAsync: ' + util.inspect(event));
+    async _onDisconnectingAsync(event) {
+        logger.info('_onDisconnectingAsync: ' + util.inspect(event));
         const message = `Bot disconnecting.  Messages from this channel will NOT be sent to ${teams} in Teams`
         const res = await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
     }

@@ -99,7 +99,7 @@ const createInitialSlackToTeamsMappings = async () => {
         logger.error(error.stack)
     }
 }
-// createInitialSlackToTeamsMappings()
+createInitialSlackToTeamsMappings()
 
 const TeamsToSlackMapping = require('./teams-to-slack-mapping')
 const createInitialTeamsToSlackMappings = async () => {

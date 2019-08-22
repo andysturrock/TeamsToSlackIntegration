@@ -20,8 +20,8 @@ const scanAsync = promisify(client.scan).bind(client);
 const zscanAsync = promisify(client.zscan).bind(client);
 const zremrangebyscore = promisify(client.zremrangebyscore).bind(client);
 const REDIS_SCAN_COUNT = 100
-const REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS=60
-// zrangebyscore "TeamsMessages/fb5cb1df-ad0a-4ae4-b979-21db4a48f68c/19:fb442837eaa74fd4ae81ed89c5e39cf6@thread.skype" 0 1566465060
+// const REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS = 60 * 60 * 24 * 5 // 5 days
+const REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS = 60 * 2 // 2 minutes
 
 function createTeamsChannelKey(teamId, teamsChannelId) {
     return `${teamId}/${teamsChannelId}`
@@ -78,6 +78,8 @@ module.exports = {
         return await getAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId))
     },
 
+    // Simple key/value stores have built in TTL functionality.
+    // Use the same values as the sorted sets TTL.
     setSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId, slackMessageId) {
         await setAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId),
             slackMessageId,
@@ -85,7 +87,9 @@ module.exports = {
     },
 
     setLastReplyTimeAsync: async function (teamId, teamsChannelId, teamsMessageId, date) {
-        await setAsync("TeamsMessageId2LastReplyTime/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId), JSON.stringify(date))
+        await setAsync("TeamsMessageId2LastReplyTime/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId),
+            JSON.stringify(date),
+            "EX", REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS)
     },
 
     getLastReplyTimeAsync: async function (teamId, teamsChannelId, teamsMessageId) {

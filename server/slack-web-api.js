@@ -1,25 +1,19 @@
 'use strict'
 const util = require('util')
 const logger = require('pino')()
-
+const { WebClient } = require('@slack/web-api')
 
 // TODO - redo this.  Having a module level "global" variable
 // can't be the best way.
 let webClient
 
 function connectToSlackWebAPI() {
-  const { WebClient } = require('@slack/web-api');
-
-  // Read a token from the environment variables
-  // TODO - read from mapping
-  const token = process.env.SLACK_TOKEN;
-
   // Initialize
-  webClient = new WebClient(token);
+  webClient = new WebClient()
 }
 
 function web() {
-  if(!webClient) {
+  if (!webClient) {
     connectToSlackWebAPI()
   }
   return webClient
@@ -27,22 +21,12 @@ function web() {
 
 module.exports = {
 
-  getBotConversationsAsync: async function (web) {
-    return await web().users.conversations()
+  postMessageAsync: async function (token, message, channelId) {
+    return await web().chat.postMessage({ token: token, text: message, channel: channelId })
   },
 
-  postMessageAsync: async function (message, channelId, slackMessageId) {
-    try {
-      if(slackMessageId) {
-        const result = await web().chat.postMessage({ text: message, channel: channelId, thread_ts: slackMessageId });
-        return result.ts
-      } else {
-        const result = await web().chat.postMessage({ text: message, channel: channelId });
-        return result.ts
-      }
-    }
-    catch (error) {
-      logger.error("postMessageAsync(): " + util.inspect(error))
-    }
+  postReplyAsync: async function (token, message, channelId, slackMessageId) {
+    return await web().chat.postMessage({ token: token, text: message, channel: channelId, thread_ts: slackMessageId })
   }
-};
+
+}

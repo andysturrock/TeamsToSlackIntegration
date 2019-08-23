@@ -10,19 +10,37 @@ const slackWeb = require('./slack-web-api')
 const graph = require('./graph');
 const teams = require('./teams');
 
+const _instances = new Map()
+const _poll = async () => {
+    for(let teamsToSlackMapping of _instances.values()) {
+        await teamsToSlackMapping._pollTeamsForMessagesAsync()
+    }
+}
+setInterval(_poll, 5000);
+
 class TeamsToSlackMapping {
 
     constructor(channelMapping) {
         this._channelMapping = channelMapping
         this._alreadyPolling = false
+        _instances.set(channelMapping.toString(), this)
+    }
+
+    static getMapping(channelMapping) {
+        return _instances.get(channelMapping.toString())
     }
 
     async initAsync() {
         const botToken = await tokens.getBotTokenAsync()
         // TODO get Slack channel URL and use in message below.
         const message = `Message from this channel will be sent to ${this._channelMapping.workspace.name}/${this._channelMapping.slackChannel.name} in Slack`
-        teams.postBotMessageAsync(botToken.access_token, this._channelMapping.teamsChannel.id, message)
-        setInterval(this._pollTeamsForMessagesAsync.bind(this), 5000);
+        await teams.postBotMessageAsync(botToken.access_token, this._channelMapping.teamsChannel.id, message)
+    }
+
+    async destroy() {
+        const message = `No longer sending messages from this channel to ${this._channelMapping.workspace.name}/${this._channelMapping.slackChannel.name} in Slack`
+        await teams.postBotMessageAsync(botToken.access_token, this._channelMapping.teamsChannel.id, message)
+        _instances.delete(this._channelMapping.toString())
     }
 
     async _pollTeamsForMessagesAsync() {
@@ -57,7 +75,7 @@ class TeamsToSlackMapping {
             // If we haven't seen any before, then post a warning and start from now
             if (!lastMessageTime) {
                 logger.info(`Can't find a previous message from ${teamId}/${teamsChannelId}`)
-                const slackMessage = `Can't find any previous messages from Teams ${teamId}/${teamsChannelId} - please check Teams`
+                const slackMessage = `Can't find any previous messages from Teams ${teamName}/${teamsChannelName} - please check Teams`
                 await slackWeb.postMessageAsync(slackToken, slackMessage, slackChannelId)
                 await channelMaps.setLastMessageTimeAsync(teamId, teamsChannelId, new Date())
             } else {

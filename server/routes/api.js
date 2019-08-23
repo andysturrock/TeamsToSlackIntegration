@@ -6,6 +6,9 @@ const createError = require('http-errors');
 const util = require('util')
 const channelMaps = require('../channel-maps')
 const tokens = require('../oauth/tokens.js');
+const SlackToTeamsMapping = require('../slack-to-teams-mapping')
+const TeamsToSlackMapping = require('../teams-to-slack-mapping')
+const ChannelMapping = require('../channel-mapping')
 
 router.get('/', async function (req, res) {
   // TODO check that the oauth token is
@@ -42,15 +45,8 @@ router.post('/', async function (req, res) {
     // workspace: { id: string, name: string };
     // slackChannel: {id: string, name: string};
     // mappingOwner: {id: string, name: string, token: string};
-    const channelMapping = req.body;
-    const valid = channelMapping.team && channelMapping.team.id && channelMapping.team.name
-      && channelMapping.teamsChannel && channelMapping.teamsChannel.id && channelMapping.teamsChannel.name
-      && channelMapping.workspace && channelMapping.workspace.id && channelMapping.workspace.name
-      && channelMapping.slackChannel && channelMapping.slackChannel.id && channelMapping.slackChannel.name
-      && channelMapping.slackBotToken
-      && channelMapping.mappingOwner && channelMapping.mappingOwner.id && channelMapping.mappingOwner.name
-      && channelMapping.mappingOwner.token;
-    if (!valid) {
+    const channelMapping = new ChannelMapping(req.body)
+    if (!channelMapping.isValid()) {
       logger.error("Missing fields in body", req.body)
       res.status(200).json({ error: 'One or more missing fields' });
     } else {
@@ -58,6 +54,13 @@ router.post('/', async function (req, res) {
       const onBehalfOfToken = await tokens.getOnBehalfOfTokenAsync(channelMapping.mappingOwner.token)
       channelMapping.mappingOwner.token = onBehalfOfToken
       await channelMaps.saveMapAsync(channelMapping)
+      // These registers themselves, so don't need to hang on to the references here.
+      const slackToTeamsMapping = new SlackToTeamsMapping(channelMapping)
+      await slackToTeamsMapping.initAsync()
+
+      const teamsToSlackMapping = new TeamsToSlackMapping(channelMapping)
+      await teamsToSlackMapping.initAsync()
+
       res.status(200).json({ result: 'success' });
     }
   } catch (error) {
@@ -77,7 +80,19 @@ router.delete('/', async function (req, res) {
   // }
 
   try {
-    await channelMaps.deleteMapAsync(req.body)
+    const channelMapping = new ChannelMapping(req.body)
+    if (!channelMapping.isValid()) {
+      logger.error("Missing fields in body", req.body)
+      res.status(200).json({ error: 'One or more missing fields' })
+    }
+    await channelMaps.deleteMapAsync(channelMapping)
+
+    const slackToTeamsMapping = SlackToTeamsMapping.getMapping(channelMapping)
+    slackToTeamsMapping.destroy()
+
+    const teamsToSlackMapping = TeamsToSlackMapping.getMapping(channelMapping)
+    teamsToSlackMapping.destroy()
+
     res.status(200).json({ result: 'success' });
   } catch (error) {
     logger.error(error)

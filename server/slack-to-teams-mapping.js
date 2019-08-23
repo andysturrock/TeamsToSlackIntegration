@@ -8,10 +8,17 @@ const tokens = require('./oauth/tokens')
 const teams = require('./teams')
 const slackWeb = require('./slack-web-api')
 
+const _instances = new Map()
+
 class SlackToTeamsMapping {
 
     constructor(channelMapping) {
         this._channelMapping = channelMapping
+        _instances.set(channelMapping.toString(), this)
+    }
+
+    static getMapping(channelMapping) {
+        return _instances.get(channelMapping.toString())
     }
 
     async initAsync() {
@@ -31,7 +38,15 @@ class SlackToTeamsMapping {
         this._teamsBotAccessToken = botToken.access_token
     }
 
-    async disconnectAsync() {
+    async destroy() {
+        const teams = this._channelMapping.team.name + "/" + this._channelMapping.teamsChannel.name
+        const message = `No longer sending messages from this channel to ${teams} in Teams`
+        await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
+        await this._disconnectAsync()
+        _instances.delete(this._channelMapping.toString())
+    }
+
+    async _disconnectAsync() {
         await this._rtmclient.disconnect()
     }
 
@@ -60,7 +75,7 @@ class SlackToTeamsMapping {
         if (event.channel != this._channelMapping.slackChannel.id) {
             return
         }
-        
+
         // Don't port bot messages to Teams.  Some of them will be from us anyway.
         if (event.subtype == 'bot_message') {
             logger.info('A bot sent:' + util.inspect(event))
@@ -87,7 +102,5 @@ class SlackToTeamsMapping {
         const res = await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
     }
 }
-
-
 
 module.exports = SlackToTeamsMapping

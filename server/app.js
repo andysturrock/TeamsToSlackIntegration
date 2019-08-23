@@ -70,22 +70,8 @@ app.use(function (err, req, res, next) {
     res.sendStatus(err.status || 500);
 });
 
-const oauth2 = require('./oauth/oauth.js')
+
 const channelMaps = require('./channel-maps')
-const teams = require('./teams');
-const graph = require('./graph');
-const checkForMessagesInMappings = async () => {
-    try {
-        const channelMappings = await channelMaps.getMapsAsync();
-        for (let channelMapping of channelMappings) {
-            await teams.pollTeamsForMessagesAsync(channelMapping)
-        }
-    } catch (err) {
-        logger.error("arse()\n" + util.inspect(err) + "\n" + err.stack)
-    }
-}
-// setInterval(checkForMessagesInMappings, 5000);
-// checkForMessagesInMappings()
 
 const SlackToTeamsMapping = require('./slack-to-teams-mapping')
 const createInitialSlackToTeamsMappings = async () => {

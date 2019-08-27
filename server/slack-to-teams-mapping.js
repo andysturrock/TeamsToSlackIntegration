@@ -14,11 +14,18 @@ class SlackToTeamsMapping {
 
     constructor(channelMapping) {
         this._channelMapping = channelMapping
-        _instances.set(channelMapping.toString(), this)
+        _instances.set(SlackToTeamsMapping._getInstanceKey(channelMapping), this)
     }
 
     static getMapping(channelMapping) {
-        return _instances.get(channelMapping.toString())
+        return _instances.get(SlackToTeamsMapping._getInstanceKey(channelMapping))
+    }
+
+    // Just use the team/channel + workspace/channel for keys in the instance
+    // map, as the tokens, particularly the teams token, may get updated.
+    static _getInstanceKey(channelMapping) {
+        return channelMapping.team.id + channelMapping.teamsChannel.id +
+            channelMapping.workspace.id + channelMapping.slackChannel.id
     }
 
     async initAsync() {
@@ -43,7 +50,7 @@ class SlackToTeamsMapping {
         const message = `No longer sending messages from this channel to ${teams} in Teams`
         await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
         await this._disconnectAsync()
-        _instances.delete(this._channelMapping.toString())
+        _instances.delete(SlackToTeamsMapping.getMapping(this._channelMapping))
     }
 
     async _disconnectAsync() {

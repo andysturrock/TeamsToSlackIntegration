@@ -43,12 +43,12 @@ module.exports = class ChannelMapping {
 
     isValid() {
         return this.team && this.team.id && this.team.name
-        && this.teamsChannel && this.teamsChannel.id && this.teamsChannel.name
-        && this.workspace && this.workspace.id && this.workspace.name
-        && this.slackChannel && this.slackChannel.id && this.slackChannel.name
-        && this.slackBotToken
-        && this.mappingOwner && this.mappingOwner.id && this.mappingOwner.name
-        && this.mappingOwner.token
+            && this.teamsChannel && this.teamsChannel.id && this.teamsChannel.name
+            && this.workspace && this.workspace.id && this.workspace.name
+            && this.slackChannel && this.slackChannel.id && this.slackChannel.name
+            && this.slackBotToken
+            && this.mappingOwner && this.mappingOwner.id && this.mappingOwner.name
+            && this.mappingOwner.token
     }
 
 }

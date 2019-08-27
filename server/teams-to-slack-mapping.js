@@ -23,11 +23,18 @@ class TeamsToSlackMapping {
     constructor(channelMapping) {
         this._channelMapping = channelMapping
         this._alreadyPolling = false
-        _instances.set(channelMapping.toString(), this)
+        _instances.set(TeamsToSlackMapping._getInstanceKey(channelMapping), this)
     }
 
     static getMapping(channelMapping) {
-        return _instances.get(channelMapping.toString())
+        return _instances.get(TeamsToSlackMapping._getInstanceKey(channelMapping))
+    }
+
+    // Just use the team/channel + workspace/channel for keys in the instance
+    // map, as the tokens, particularly the teams token, may get updated.
+    static _getInstanceKey(channelMapping) {
+        return channelMapping.team.id + channelMapping.teamsChannel.id +
+            channelMapping.workspace.id + channelMapping.slackChannel.id
     }
 
     async initAsync() {
@@ -38,9 +45,16 @@ class TeamsToSlackMapping {
     }
 
     async destroy() {
+        const botToken = await tokens.getBotTokenAsync()
         const message = `No longer sending messages from this channel to ${this._channelMapping.workspace.name}/${this._channelMapping.slackChannel.name} in Slack`
         await teams.postBotMessageAsync(botToken.access_token, this._channelMapping.teamsChannel.id, message)
-        _instances.delete(this._channelMapping.toString())
+        let values = _instances.values()
+        logger.error("values before delete: " + util.inspect(values))
+
+        _instances.delete(TeamsToSlackMapping.getMapping(this._channelMapping))
+
+        values = _instances.values()
+        logger.error("values after delete: " + util.inspect(values, true, 2))
     }
 
     async _pollTeamsForMessagesAsync() {

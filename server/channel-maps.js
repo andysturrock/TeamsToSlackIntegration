@@ -31,6 +31,10 @@ function createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId) {
     return `${teamId}/${teamsChannelId}/${teamsMessageId}`
 }
 
+function createSlackMessageKey(workspaceId, slackChannelId, slackMessageId) {
+    return `${workspaceId}/${slackChannelId}/${slackMessageId}`
+}
+
 async function getAllKeys(pattern) {
     let keys = []
     let cursor = 0
@@ -61,6 +65,9 @@ setInterval(deleteOldMessages, 5000 * 60);
 
 module.exports = {
 
+    /////////////////////////////////////////////////////////////////////////
+    // Set and get last time we saw a message in a Teams channel
+    //
     setLastMessageTimeAsync: async function (teamId, teamsChannelId, date) {
         await setAsync("LastMessageTime/" + createTeamsChannelKey(teamId, teamsChannelId), JSON.stringify(date))
     },
@@ -73,19 +80,12 @@ module.exports = {
         // which is what happens if you just set/get the object.
         return date ? new Date(JSON.parse(date)) : date
     },
+    //
+    /////////////////////////////////////////////////////////////////////////
 
-    getSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId) {
-        return await getAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId))
-    },
-
-    // Simple key/value stores have built in TTL functionality.
-    // Use the same values as the sorted sets TTL.
-    setSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId, slackMessageId) {
-        await setAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId),
-            slackMessageId,
-            "EX", REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS)
-    },
-
+    /////////////////////////////////////////////////////////////////////////
+    // Set and get last time we saw a reply in a Teams channel
+    //
     setLastReplyTimeAsync: async function (teamId, teamsChannelId, teamsMessageId, date) {
         await setAsync("TeamsMessageId2LastReplyTime/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId),
             JSON.stringify(date),
@@ -96,7 +96,55 @@ module.exports = {
         const date = await getAsync("TeamsMessageId2LastReplyTime/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId))
         return date ? new Date(JSON.parse(date)) : date
     },
+    //
+    /////////////////////////////////////////////////////////////////////////
 
+    /////////////////////////////////////////////////////////////////////////
+    //
+    // Set and get a mapping between a Slack message ID and a Teams message ID
+    //
+    // Simple key/value stores have built in TTL functionality.
+    // Use the same values as the sorted sets TTL.
+    setSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId, slackMessageId) {
+        await setAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId),
+            slackMessageId,
+            "EX", REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS)
+    },
+    // The Slack message ID is unique because we only allow one-to-one mappings of Teams<->Slack channels
+    // If we ever allow many-to-many mappings we'll have to include Slack workspace ID and channel ID.
+    getSlackMessageIdAsync: async function (teamId, teamsChannelId, teamsMessageId) {
+        return await getAsync("TeamsMessageId2SlackMessageId/" + createTeamsMessageKey(teamId, teamsChannelId, teamsMessageId))
+    },
+    //
+    /////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////////
+    //
+    // Set and get a mapping between a Slack message ID and a Teams message ID
+    //
+    setTeamsMessageIdAsync: async function (workspaceId, slackChannelId, slackMessageId, teamsMessageId) {
+        await setAsync("SlackMessageId2TeamsMessageId/" + createSlackMessageKey(workspaceId, slackChannelId, slackMessageId),
+            teamsMessageId,
+            "EX", REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS)
+    },
+    // Ditto comment re Slack message ID but for Teams message ID.  Ie...
+    // The Teams message ID is unique because we only allow one-to-one mappings of Teams<->Slack channels
+    // If we ever allow many-to-many mappings we'll have to include Teams team ID and channel ID.
+    getTeamsMessageIdAsync: async function (workspaceId, slackChannelId, slackMessageId) {
+        return await getAsync("SlackMessageId2TeamsMessageId/" + createSlackMessageKey(workspaceId, slackChannelId, slackMessageId))
+    },
+    //
+    /////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////////
+    //
+    // Save and get Teams message IDs.
+    //
+    addTeamsMessageIdAsync: async function (teamId, teamsChannelId, messageId) {
+        // TTL is time when we'll remove this element
+        const ttl = moment().add(REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS, 'seconds').utc().unix()
+        await zaddAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId), ttl, messageId)
+    },
     // Use the redis sorted set functionality to add a TTL as the score.
     // Then periodically sweep the set and delete all the entries with a TTL
     // older than the current time.
@@ -119,13 +167,12 @@ module.exports = {
         }
         return messageIds
     },
+    //
+    /////////////////////////////////////////////////////////////////////////
 
-    addTeamsMessageIdAsync: async function (teamId, teamsChannelId, messageId) {
-        // TTL is time when we'll remove this element
-        const ttl = moment().add(REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS, 'seconds').utc().unix()
-        await zaddAsync("TeamsMessages/" + createTeamsChannelKey(teamId, teamsChannelId), ttl, messageId)
-    },
-
+    /////////////////////////////////////////////////////////////////////////
+    //
+    // Save, get and delete mappings between a Slack and Teams channel
     saveMapAsync: async function (channelMapping) {
         let key = "TeamsChannel2SlackChannel/" + createTeamsChannelKey(channelMapping.team.id, channelMapping.teamsChannel.id)
         await setAsync(key, JSON.stringify(channelMapping))
@@ -156,4 +203,6 @@ module.exports = {
         key = "SlackChannel2TeamsChannel/" + channelMapping.slackChannel.id
         await delAsync(key)
     }
+    //
+    /////////////////////////////////////////////////////////////////////////
 };

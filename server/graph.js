@@ -52,6 +52,19 @@ module.exports = {
     return messages;
   },
 
+  // Get last X messages from the channel
+  getLastXMessagesAsync: async function (accessToken, teamId, channelId, lastX) {
+    const client = getAuthenticatedClient(accessToken);
+    const url = `/teams/${teamId}/channels/${channelId}/messages`
+    let messagesData = await client
+      .api(url)
+      .version('beta')
+      .top(lastX)
+      .get();
+
+    return messagesData.value
+  },
+
   getRepliesAfterAsync: async function (accessToken, teamId, channelId, messageId, date) {
     const allReplies = await this.getRepliesAsync(accessToken, teamId, channelId, messageId)
     if (!date) {

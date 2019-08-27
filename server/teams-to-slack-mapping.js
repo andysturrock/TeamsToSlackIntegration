@@ -57,6 +57,8 @@ class TeamsToSlackMapping {
         const teamName = this._channelMapping.team.name
         const teamsChannelName = this._channelMapping.teamsChannel.name
         const slackToken = this._channelMapping.slackBotToken
+        const workspaceId = this._channelMapping.workspace.id
+        const slackChannelId = this._channelMapping.slackChannel.id
 
         if (this._alreadyPolling) {
             logger.debug(`Already polling for ${teamName}/${teamsChannelName} so returning`)
@@ -66,8 +68,6 @@ class TeamsToSlackMapping {
         try {
             this._alreadyPolling = true
             logger.info(`Polling for messages in ${teamName}/${teamsChannelName}...`)
-
-            const slackChannelId = this._channelMapping.slackChannel.id;
 
             // Refresh the token if it needs it
             const oauthToken = oauth2.accessToken.create(this._channelMapping.mappingOwner.token);
@@ -83,8 +83,6 @@ class TeamsToSlackMapping {
             // If we haven't seen any before, then post a warning and start from now
             if (!lastMessageTime) {
                 logger.info(`Can't find a previous message from ${teamId}/${teamsChannelId}`)
-                const slackMessage = `Can't find any previous messages from Teams ${teamName}/${teamsChannelName} - please check Teams`
-                await slackWeb.postMessageAsync(slackToken, slackMessage, slackChannelId)
                 await channelMaps.setLastMessageTimeAsync(teamId, teamsChannelId, new Date())
             } else {
                 logger.info("lastMessageTime: " + lastMessageTime + " getting messages since then...")
@@ -112,6 +110,7 @@ class TeamsToSlackMapping {
                         const slackMessage = `${message.from.user.displayName} from ${webUrl}: ${message.body.content}`
                         const slackResponse = await slackWeb.postMessageAsync(slackToken, slackMessage, slackChannelId)
                         await channelMaps.setSlackMessageIdAsync(teamId, teamsChannelId, message.id, slackResponse.ts)
+                        await channelMaps.setTeamsMessageIdAsync(workspaceId, slackChannelId, slackResponse.ts, message.id)
                     }
 
                     // Keep track of the latest message we've seen             
@@ -157,16 +156,16 @@ class TeamsToSlackMapping {
                     logger.debug("reply to id:" + util.inspect(reply.replyToId))
                     logger.debug("reply created time: " + reply.createdDateTime)
                     logger.debug("reply from: " + util.inspect(reply.from.user))
-                    logger.error("reply: " + util.inspect(reply))
+                    logger.debug("reply: " + util.inspect(reply))
 
                     const replyCreatedDateTime = new Date(reply.createdDateTime)
 
+                    // Don't post replies from bots
                     if (reply.from.application) {
-                        logger.error("Saw a reply from an application - " + reply.from.application.displayName)
+                        logger.debug("Saw a reply from an application - " + reply.from.application.displayName)
                     } else {
                         // Find the Slack message id for the original message
                         const slackMessageId = await channelMaps.getSlackMessageIdAsync(teamId, teamsChannelId, reply.replyToId)
-                        logger.debug(`slackMessageId for reply = ${slackMessageId}`)
                         const webUrl = `<${reply.webUrl}|Teams>`
                         const slackReply = `${reply.from.user.displayName} from ${webUrl}: ${reply.body.content}`
                         // Now post the reply to the slack message thread

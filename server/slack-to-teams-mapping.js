@@ -50,7 +50,7 @@ class SlackToTeamsMapping {
         const message = `No longer sending messages from this channel to ${teams} in Teams`
         await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
         await this._disconnectAsync()
-        _instances.delete(SlackToTeamsMapping.getMapping(this._channelMapping))
+        _instances.delete(SlackToTeamsMapping._getInstanceKey(this._channelMapping))
     }
 
     async _disconnectAsync() {

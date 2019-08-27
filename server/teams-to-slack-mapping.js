@@ -12,7 +12,7 @@ const teams = require('./teams');
 
 const _instances = new Map()
 const _poll = async () => {
-    for(let teamsToSlackMapping of _instances.values()) {
+    for (let teamsToSlackMapping of _instances.values()) {
         await teamsToSlackMapping._pollTeamsForMessagesAsync()
     }
 }
@@ -48,13 +48,7 @@ class TeamsToSlackMapping {
         const botToken = await tokens.getBotTokenAsync()
         const message = `No longer sending messages from this channel to ${this._channelMapping.workspace.name}/${this._channelMapping.slackChannel.name} in Slack`
         await teams.postBotMessageAsync(botToken.access_token, this._channelMapping.teamsChannel.id, message)
-        let values = _instances.values()
-        logger.error("values before delete: " + util.inspect(values))
-
-        _instances.delete(TeamsToSlackMapping.getMapping(this._channelMapping))
-
-        values = _instances.values()
-        logger.error("values after delete: " + util.inspect(values, true, 2))
+        _instances.delete(TeamsToSlackMapping._getInstanceKey(this._channelMapping))
     }
 
     async _pollTeamsForMessagesAsync() {

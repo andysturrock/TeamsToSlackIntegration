@@ -4,9 +4,12 @@ const util = require('util')
 const logger = require('pino')()
 const { RTMClient } = require('@slack/rtm-api');
 const { WebClient } = require('@slack/web-api');
+const oauth2 = require('./oauth/oauth')
 const tokens = require('./oauth/tokens')
 const teams = require('./teams')
-const slackWeb = require('./slack-web-api')
+const graph = require('./graph')
+const channelMaps = require('./channel-maps')
+
 
 const _instances = new Map()
 
@@ -14,6 +17,7 @@ class SlackToTeamsMapping {
 
     constructor(channelMapping) {
         this._channelMapping = channelMapping
+        this._userId2Details = new Map()
         _instances.set(SlackToTeamsMapping._getInstanceKey(channelMapping), this)
     }
 
@@ -61,7 +65,9 @@ class SlackToTeamsMapping {
         try {
             const teams = this._channelMapping.team.name + "/" + this._channelMapping.teamsChannel.name
             const message = `Messages from this channel will be sent to ${teams} in Teams`
-            await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
+            // await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
+            await this._webClient.chat.postMessage(
+                { text: message, channel: this._channelMapping.slackChannel.id })
         }
         catch (error) {
             logger.error("Error in Slack RTM API: " + error.stack)
@@ -83,22 +89,56 @@ class SlackToTeamsMapping {
             return
         }
 
-        // Don't port bot messages to Teams.  Some of them will be from us anyway.
+        // Don't post bot messages to Teams.  Some of them will be from us anyway.
         if (event.subtype == 'bot_message') {
-            logger.info('A bot sent:' + util.inspect(event))
+            logger.debug('A bot sent:' + util.inspect(event))
         } else {
             logger.info('A user sent:' + util.inspect(event))
             logger.info(`_onMessageAsync ${event.user} sent this:` + event.text)
+            const workspaceId = this._channelMapping.workspace.id
+            const slackChannelId = this._channelMapping.slackChannel.id
+            const permaLink = await this._webClient.chat.getPermalink({ channel: event.channel, message_ts: event.ts })
+            const userDetails = await this.getUserDetails(event.user)
+            const userName = userDetails.user.real_name
+            const message = `<a href="${permaLink.permalink}">${userName} from Slack</a><p>${event.text}</p>`
 
             if (event.thread_ts) {
-                logger.info("this is a reply - can't do those yet coz of stupid Teams API")
-                // await teams.postBotReplyAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
-                //     messageId, "reply using teams function")
+                const teamsMessageId = await channelMaps.getTeamsMessageIdAsync(workspaceId, slackChannelId, event.thread_ts)
+                if (teamsMessageId) {
+                    await teams.postBotReplyAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
+                        teamsMessageId, message)
+                } else {
+                    logger.warn(`Could not find Teams message id for Slack message ${permaLink.permalink}`)
+                }
             } else {
-                const permaLink = await this._webClient.chat.getPermalink({ channel: event.channel, message_ts: event.ts })
-                const message = `<a href="${permaLink.permalink}">Andy from Slack</a><p>${event.text}</p>`
                 await teams.postBotMessageAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
                     message)
+                // Because the method above doesn't return us the message id, we can't store the mapping of
+                // Slack message to Teams message for use in replies.  So instead poll Teams for the last few messages and find the one
+                // we just posted.
+                // Refresh the token if it needs it
+                const oauthToken = oauth2.accessToken.create(this._channelMapping.mappingOwner.token);
+                const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);
+                const teamId = this._channelMapping.team.id
+                const teamsChannelId = this._channelMapping.teamsChannel.id
+                // Last 25 messages should be OK as we have just posted and people don't type that quickly
+                const teamsMessages = await graph.getLastXMessagesAsync(accessToken, teamId, teamsChannelId, 25)
+                let teamsMessageId = null
+                for (let teamsMessage of teamsMessages) {
+                    const content = teamsMessage.body.content
+                    if (content.includes(permaLink.permalink)) {
+                        teamsMessageId = teamsMessage.id
+                        break
+                    }
+                }
+                if (teamsMessageId) {
+                    const slackMessageId = event.ts
+                    logger.error(`Saving mapping ${workspaceId}, ${slackChannelId}, ${slackMessageId}, => ${teamsMessageId}`)
+                    await channelMaps.setTeamsMessageIdAsync(workspaceId, slackChannelId, slackMessageId, teamsMessageId)
+                    await channelMaps.setSlackMessageIdAsync(teamId, teamsChannelId, teamsMessageId, slackMessageId)
+                } else {
+                    logger.warn(`Could not find Teams message id for Slack message ${permaLink.permalink}`)
+                }
             }
         }
     }
@@ -107,6 +147,15 @@ class SlackToTeamsMapping {
         logger.info('_onDisconnectingAsync: ' + util.inspect(event));
         const message = `Bot disconnecting.  Messages from this channel will NOT be sent to ${teams} in Teams`
         const res = await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
+    }
+
+    async getUserDetails(userId) {
+        let userDetails = this._userId2Details.get(userId)
+        if (!userDetails) {
+            userDetails = await this._webClient.users.info({ user: userId })
+            this._userId2Details.set(userId, userDetails)
+        }
+        return userDetails
     }
 }
 

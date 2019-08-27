@@ -75,7 +75,7 @@ class SlackToTeamsMapping {
     }
 
     async _onMessageAsync(event) {
-        logger.info('_onMessageAsync for ' + this._channelMapping.slackChannel.name + " : " + util.inspect(event));
+        logger.debug('_onMessageAsync for ' + this._channelMapping.slackChannel.name + " : " + util.inspect(event));
         if (event.hidden) {
             return
         }
@@ -93,8 +93,6 @@ class SlackToTeamsMapping {
         if (event.subtype == 'bot_message') {
             logger.debug('A bot sent:' + util.inspect(event))
         } else {
-            logger.info('A user sent:' + util.inspect(event))
-            logger.info(`_onMessageAsync ${event.user} sent this:` + event.text)
             const workspaceId = this._channelMapping.workspace.id
             const slackChannelId = this._channelMapping.slackChannel.id
             const permaLink = await this._webClient.chat.getPermalink({ channel: event.channel, message_ts: event.ts })
@@ -103,6 +101,7 @@ class SlackToTeamsMapping {
             const message = `<a href="${permaLink.permalink}">${userName} from Slack</a><p>${event.text}</p>`
 
             if (event.thread_ts) {
+                // It's a reply
                 const teamsMessageId = await channelMaps.getTeamsMessageIdAsync(workspaceId, slackChannelId, event.thread_ts)
                 if (teamsMessageId) {
                     await teams.postBotReplyAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
@@ -111,6 +110,7 @@ class SlackToTeamsMapping {
                     logger.warn(`Could not find Teams message id for Slack message ${permaLink.permalink}`)
                 }
             } else {
+                // It's the first message (might turn into a thread later)
                 await teams.postBotMessageAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
                     message)
                 // Because the method above doesn't return us the message id, we can't store the mapping of
@@ -133,7 +133,6 @@ class SlackToTeamsMapping {
                 }
                 if (teamsMessageId) {
                     const slackMessageId = event.ts
-                    logger.error(`Saving mapping ${workspaceId}, ${slackChannelId}, ${slackMessageId}, => ${teamsMessageId}`)
                     await channelMaps.setTeamsMessageIdAsync(workspaceId, slackChannelId, slackMessageId, teamsMessageId)
                     await channelMaps.setSlackMessageIdAsync(teamId, teamsChannelId, teamsMessageId, slackMessageId)
                 } else {

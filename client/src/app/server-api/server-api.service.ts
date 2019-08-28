@@ -3,6 +3,8 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import * as util from 'util';
 import { ChannelMapping } from '../channelMapping';
 
+const apiBaseUrl = 'http://localhost:3000/api'
+
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
   params: null
@@ -18,7 +20,7 @@ export class ServerApiService {
     // TODO - protect the API
     let params = new HttpParams().set('token', 'TODO')
     httpOptions.params = params;
-    let response = await this.http.post('http://localhost:3000/api', JSON.stringify(data), httpOptions).toPromise();
+    let response = await this.http.post(apiBaseUrl, JSON.stringify(data), httpOptions).toPromise();
   }
 
   async getMappingsAsync(): Promise<ChannelMapping[]> {
@@ -26,7 +28,7 @@ export class ServerApiService {
       // TODO - protect the API
       let params = new HttpParams().set('token', 'TODO')
       httpOptions.params = params;
-      return await this.http.get<ChannelMapping[]>('http://localhost:3000/api', httpOptions).toPromise();
+      return await this.http.get<ChannelMapping[]>(apiBaseUrl, httpOptions).toPromise();
     }
     catch (error) {
       console.error("getMappingsAsync() error: " + util.inspect(error))
@@ -36,7 +38,7 @@ export class ServerApiService {
   async deleteMappingAsync(data): Promise<void> {
     try {
       // the http.delete method doesn't allow a body, so use this instead...
-      await this.http.request('delete', 'http://localhost:3000/api',
+      await this.http.request('delete', apiBaseUrl,
         {
           body: JSON.stringify(data),
           headers: httpOptions.headers,

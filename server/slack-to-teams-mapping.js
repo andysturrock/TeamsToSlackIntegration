@@ -6,7 +6,6 @@ const { RTMClient } = require('@slack/rtm-api');
 const { WebClient } = require('@slack/web-api');
 const oauth2 = require('./oauth/oauth')
 const tokens = require('./oauth/tokens')
-const teams = require('./teams')
 const graph = require('./graph')
 const channelMaps = require('./channel-maps')
 
@@ -104,14 +103,14 @@ class SlackToTeamsMapping {
                 // It's a reply
                 const teamsMessageId = await channelMaps.getTeamsMessageIdAsync(workspaceId, slackChannelId, event.thread_ts)
                 if (teamsMessageId) {
-                    await teams.postBotReplyAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
+                    await graph.postBotReplyAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
                         teamsMessageId, message)
                 } else {
                     logger.warn(`Could not find Teams message id for Slack message ${permaLink.permalink}`)
                 }
             } else {
                 // It's the first message (might turn into a thread later)
-                await teams.postBotMessageAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
+                await graph.postBotMessageAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
                     message)
                 // Because the method above doesn't return us the message id, we can't store the mapping of
                 // Slack message to Teams message.  So instead poll Teams for the last few messages

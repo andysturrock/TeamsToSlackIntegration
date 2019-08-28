@@ -8,7 +8,6 @@ const tokens = require('./oauth/tokens')
 const channelMaps = require('./channel-maps')
 const slackWeb = require('./slack-web-api')
 const graph = require('./graph');
-const teams = require('./teams');
 
 const _instances = new Map()
 const _poll = async () => {
@@ -41,13 +40,13 @@ class TeamsToSlackMapping {
         const botToken = await tokens.getBotTokenAsync()
         // TODO get Slack channel URL and use in message below.
         const message = `Message from this channel will be sent to ${this._channelMapping.workspace.name}/${this._channelMapping.slackChannel.name} in Slack`
-        await teams.postBotMessageAsync(botToken.access_token, this._channelMapping.teamsChannel.id, message)
+        await graph.postBotMessageAsync(botToken.access_token, this._channelMapping.teamsChannel.id, message)
     }
 
     async destroy() {
         const botToken = await tokens.getBotTokenAsync()
         const message = `No longer sending messages from this channel to ${this._channelMapping.workspace.name}/${this._channelMapping.slackChannel.name} in Slack`
-        await teams.postBotMessageAsync(botToken.access_token, this._channelMapping.teamsChannel.id, message)
+        await graph.postBotMessageAsync(botToken.access_token, this._channelMapping.teamsChannel.id, message)
         _instances.delete(TeamsToSlackMapping._getInstanceKey(this._channelMapping))
     }
 

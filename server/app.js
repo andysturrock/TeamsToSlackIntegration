@@ -11,12 +11,7 @@ const pino = require('express-pino-logger')({
 const cors = require('cors')
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
-const flash = require('req-flash');
-
-const configuredPassport = require('./oauth/passport')
-
 const indexRouter = require('./routes/index');
-const authRouter = require('./routes/auth');
 const apiRouter = require('./routes/api');
 
 const app = express();
@@ -30,17 +25,12 @@ app.use(cors())
 // Session middleware
 app.use(session({
     store: new RedisStore(),
-    secret: 'keyboard cat',
+    secret: 'keyboard cat', // TODO use from env file
     resave: false,
     saveUninitialized: false
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Initialize passport
-app.use(configuredPassport.initialize());
-app.use(configuredPassport.session());
-app.use(flash())
 
 app.use(function (req, res, next) {
     // Set the authenticated user in the
@@ -52,7 +42,6 @@ app.use(function (req, res, next) {
 });
 
 app.use('/', indexRouter);
-app.use('/auth', authRouter);
 app.use('/api', apiRouter);
 
 // catch 404 and forward to error handler

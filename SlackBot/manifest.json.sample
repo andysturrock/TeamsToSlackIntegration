@@ -1,0 +1,41 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.5/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.5",
+    "version": "1.0.0",
+    "id": "bot_id_here",
+    "packageName": "org.sturrock.slackbot",
+    "developer": {
+        "name": "Andy Sturrock",
+        "websiteUrl": "https://github.com/andysturrock/TeamsToSlackIntegration",
+        "privacyUrl": "https://github.com/andysturrock/TeamsToSlackIntegration/privacy",
+        "termsOfUseUrl": "https://github.com/andysturrock/TeamsToSlackIntegration/termsofuse"
+    },
+    "icons": {
+        "color": "color.png",
+        "outline": "outline.png"
+    },
+    "name": {
+        "short": "SlackBot",
+        "full": "Post from Slack to Teams"
+    },
+    "description": {
+        "short": "Post from Slack to Teams",
+        "full": "Post messages written in Slack to Teams."
+    },
+    "accentColor": "#FFFFFF",
+    "bots": [
+        {
+            "botId": "bot_id_here",
+            "scopes": [
+                "team"
+            ],
+            "supportsFiles": false,
+            "isNotificationOnly": true
+        }
+    ],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "validDomains": []
+}

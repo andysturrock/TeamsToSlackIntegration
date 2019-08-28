@@ -3,18 +3,6 @@ const util = require('util')
 const logger = require('pino')()
 const https = require('https');
 
-const graph = require('./graph.js');
-const channelMaps = require('./channel-maps')
-const slackWeb = require('./slack-web-api')
-const oauth2 = require('./oauth/oauth')
-const tokens = require('./oauth/tokens')
-
-// Keep track of whether we are in the middle of polling for this
-// team and channel.  The function is re-entrant but it makes it
-// a lot more complicated if we're running it concurrently for the
-// same team and channel.
-const alreadyPollingForTeamAndChannel = new Map();
-
 module.exports = {
   postBotReplyAsync: async function (token, teamsChannelId, replyToId, message) {
     _postBotMessage(token, teamsChannelId, replyToId, message)

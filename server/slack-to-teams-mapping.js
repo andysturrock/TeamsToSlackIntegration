@@ -142,7 +142,7 @@ class SlackToTeamsMapping {
     }
 
     async _onDisconnectingAsync(event) {
-        logger.info('_onDisconnectingAsync: ' + util.inspect(event));
+        const teams = this._channelMapping.team.name + "/" + this._channelMapping.teamsChannel.name
         const message = `Bot disconnecting.  Messages from this channel will NOT be sent to ${teams} in Teams`
         const res = await this._rtmclient.sendMessage(message, this._channelMapping.slackChannel.id);
     }

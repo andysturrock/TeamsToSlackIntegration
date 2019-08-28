@@ -15,12 +15,10 @@ export class ServerApiService {
   constructor(private http: HttpClient) { }
 
   async postMappingAsync(data: string) {
-    console.error("posting: " + util.inspect(data))
     // TODO - protect the API
     let params = new HttpParams().set('token', 'TODO')
     httpOptions.params = params;
     let response = await this.http.post('http://localhost:3000/api', JSON.stringify(data), httpOptions).toPromise();
-    console.error("postMappingAsync() response = " + util.inspect(response))
   }
 
   async getMappingsAsync(): Promise<ChannelMapping[]> {

@@ -57,7 +57,6 @@ export class MappingDialogComponent {
   }
 
   private onSubmit(): void {
-    console.error("this.channelMapping = " + util.inspect(this.channelMapping))
     this.event.emit({ data: this.channelMapping });
     this.dialogRef.close();
   }

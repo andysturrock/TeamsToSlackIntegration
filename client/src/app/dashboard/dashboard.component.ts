@@ -29,7 +29,6 @@ export class DashboardComponent {
   }
 
   deleteMapping(element) {
-    console.error("deleteMapping(element) = " + util.inspect(element))
     if (this.graph.isAuthenticated()) {
       this.dataService.deleteMappingAsync(element).then(() => { this.dataSource = new ChannelMappingDataSource(this.dataService); });
     } else {

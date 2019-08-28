@@ -85,7 +85,6 @@ export class GraphService {
     try {
       const result = await this.msalService.loginPopup(OAuthSettings.graphScopes);
       if (result) {
-        console.error("signIn result = " + util.inspect(result))
         this.authenticated = true;
         await this.initGraphAsync();
         await this.setUser();

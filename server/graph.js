@@ -86,15 +86,8 @@ module.exports = {
 
   getRepliesAsync: async function (accessToken, teamId, channelId, messageId) {
     const client = getAuthenticatedClient(accessToken);
-
-    try {
-      const replies = await getMessageRepliesAsync(client, teamId, channelId, messageId)
-      return replies;
-    }
-    catch (error) {
-      logger.error("getRepliesAsync() %o", error)
-      throw (error)
-    }
+    const replies = await getMessageRepliesAsync(client, teamId, channelId, messageId)
+    return replies;
   },
 
   postBotReplyAsync: async function (token, teamsChannelId, replyToId, message) {
@@ -105,7 +98,31 @@ module.exports = {
   },
 
   postMessageAsync: async function (accessToken, teamId, channelId, message) {
-    return _postMessageAsync(accessToken, teamId, channelId, message)
+    const client = getAuthenticatedClient(accessToken);
+
+    const chatMessage = {
+      "subject": "From Slack",
+      "body": { content: message },
+      "from": {
+        device: null,
+        user: null,
+        conversation: null,
+        application:
+        {
+          id: 'ace0263e-0db8-469b-b4d7-42e7eae09038',
+          displayName: 'slackbot',
+          applicationIdentityType: 'bot'
+        }
+      }
+
+    }
+    const response = await client
+      .api(`/teams/${teamId}/channels/${channelId}/messages`)
+      .version('beta')
+      .post(chatMessage);
+
+    logger.info("response = " + util.inspect(response))
+    return response;
   }
 };
 
@@ -208,34 +225,6 @@ function getAuthenticatedClient(accessToken) {
   });
 
   return client;
-}
-
-async function _postMessageAsync(accessToken, teamId, channelId, message) {
-  const client = getAuthenticatedClient(accessToken);
-
-  const chatMessage = {
-    "subject": "From Slack",
-    "body": { content: message },
-    "from": {
-      device: null,
-      user: null,
-      conversation: null,
-      application:
-      {
-        id: 'ace0263e-0db8-469b-b4d7-42e7eae09038',
-        displayName: 'slackbot',
-        applicationIdentityType: 'bot'
-      }
-    }
-
-  }
-  const response = await client
-    .api(`/teams/${teamId}/channels/${channelId}/messages`)
-    .version('beta')
-    .post(chatMessage);
-
-  logger.info("response = " + util.inspect(response))
-  return response;
 }
 
 async function _postBotMessage(token, teamsChannelId, replyToId, message) {

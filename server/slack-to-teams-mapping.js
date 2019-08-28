@@ -114,8 +114,8 @@ class SlackToTeamsMapping {
                 await teams.postBotMessageAsync(this._teamsBotAccessToken, this._channelMapping.teamsChannel.id,
                     message)
                 // Because the method above doesn't return us the message id, we can't store the mapping of
-                // Slack message to Teams message for use in replies.  So instead poll Teams for the last few messages and find the one
-                // we just posted.
+                // Slack message to Teams message.  So instead poll Teams for the last few messages
+                // and find the one we just posted.
                 // Refresh the token if it needs it
                 const oauthToken = oauth2.accessToken.create(this._channelMapping.mappingOwner.token);
                 const accessToken = await tokens.getRefreshedTokenAsync(oauthToken);

@@ -1,0 +1,5 @@
+This application won't copy any of your data.  It just posts back and forth between Slack and Teams.
+
+However, you need to be careful when creating a channel mapping.  Membership is not synced between Slack and Teams channels.
+
+Therefore you could end up posting sensitive information from Slack to Teams or vice-versa.

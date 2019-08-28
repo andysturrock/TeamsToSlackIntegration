@@ -21,7 +21,6 @@ const zscanAsync = promisify(client.zscan).bind(client);
 const zremrangebyscore = promisify(client.zremrangebyscore).bind(client);
 const REDIS_SCAN_COUNT = 100
 const REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS = 60 * 60 * 24 * 5 // 5 days
-// const REDIS_TEAMS_MESSAGE_EXPIRY_SECONDS = 60 * 2 // 2 minutes
 
 function createTeamsChannelKey(teamId, teamsChannelId) {
     return `${teamId}/${teamsChannelId}`

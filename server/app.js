@@ -9,8 +9,6 @@ const pino = require('express-pino-logger')({
     level: process.env.LOG_LEVEL || 'warn'
 })
 const cors = require('cors')
-const session = require('express-session');
-const RedisStore = require('connect-redis')(session);
 const indexRouter = require('./routes/index');
 const apiRouter = require('./routes/api');
 
@@ -21,14 +19,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors())
-
-// Session middleware
-app.use(session({
-    store: new RedisStore(),
-    secret: 'keyboard cat', // TODO use from env file
-    resave: false,
-    saveUninitialized: false
-}));
 
 app.use(express.static(path.join(__dirname, 'public')));
 

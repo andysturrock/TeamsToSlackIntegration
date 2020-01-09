@@ -18,6 +18,7 @@ steps:
 #  workingDirectory: client
 
 - script: |
+    cd client
     ls -lrt
     npm install -g @angular/cli
     npm install

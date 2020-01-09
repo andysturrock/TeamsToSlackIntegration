@@ -10,8 +10,8 @@ import { User } from '../user';
   providedIn: 'root'
 })
 export class GraphService {
-  private authenticated: boolean;
-  private user: User;
+  authenticated: boolean;
+  user: User;
   private graphClient: Client;
   private accessToken: string;
 

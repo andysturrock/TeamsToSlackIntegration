@@ -38,6 +38,7 @@ import { faUserCircle } from '@fortawesome/free-regular-svg-icons';
 import { MsalModule } from '@azure/msal-angular';
 import { LogLevel } from "msal";
 import { OAuthSettings } from '../oauth';
+import { HomeComponent } from './home/home.component';
 
 // Add FontAwesome icons
 library.add(faExternalLinkAlt);
@@ -49,7 +50,8 @@ library.add(faUserCircle);
     WelcomeComponent,
     DashboardComponent,
     MappingDialogComponent,
-    ErrorPopupDialogComponent
+    ErrorPopupDialogComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,

@@ -8,7 +8,7 @@ import { GraphService } from '../graph/graph.service';
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private graphService: GraphService) { }
+  constructor(public graphService: GraphService) { }
 
   ngOnInit() {
   }

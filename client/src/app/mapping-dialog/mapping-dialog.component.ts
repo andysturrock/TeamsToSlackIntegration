@@ -12,12 +12,12 @@ import { Observable, of } from 'rxjs';
   styleUrls: ['./mapping-dialog.component.css']
 })
 export class MappingDialogComponent {
-  private channelMapping: ChannelMapping = new ChannelMapping();
+  channelMapping: ChannelMapping = new ChannelMapping();
   event: EventEmitter<any> = new EventEmitter();
 
-  private teams = null;
-  private teamsChannels = null;
-  private slackChannels = null;
+  teams = null;
+  teamsChannels = null;
+  slackChannels = null;
 
   constructor(
     public dialogRef: MatDialogRef<MappingDialogComponent>,
@@ -35,16 +35,16 @@ export class MappingDialogComponent {
     this.teams = await this.dataService.getTeamsAsync(this.channelMapping.mappingOwner.id);
   }
 
-  private async onTeamSelectionAsync(e): Promise<void> {
+  async onTeamSelectionAsync(e): Promise<void> {
     this.teamsChannels = await this.dataService.getTeamsChannelsAsync(e.value.id);
   }
 
-  private async onWorkspaceSearch() {
+  async onWorkspaceSearch() {
     this.channelMapping.workspace = await this.dataService.getWorkspaceAsync(this.channelMapping.slackBotToken);
     this.slackChannels = await this.dataService.getSlackChannels(this.channelMapping.slackBotToken)
   }
 
-  private enableSubmit() {
+  enableSubmit() {
     return this.channelMapping.team.id &&
       this.channelMapping.teamsChannel.id &&
       this.channelMapping.workspace.id &&
@@ -52,11 +52,11 @@ export class MappingDialogComponent {
       this.channelMapping.mappingOwner.id;
   }
 
-  private onNoClick(): void {
+  onNoClick(): void {
     this.dialogRef.close();
   }
 
-  private onSubmit(): void {
+  onSubmit(): void {
     this.event.emit({ data: this.channelMapping });
     this.dialogRef.close();
   }

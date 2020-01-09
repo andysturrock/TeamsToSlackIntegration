@@ -24,11 +24,3 @@ steps:
     npm install
     ng build --prod
   displayName: 'npm install and build'
-
-- task: AzureWebApp@1
-  inputs:
-    azureSubscription: 'Spoke-zne-mstc-n-slack-sbc-CE-ZNE-MSTC-N-11'
-    appType: 'webAppLinux'
-    appName: 'SlackTeamsIntegration'
-    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
-    runtimeStack: 'NODE|10.16'

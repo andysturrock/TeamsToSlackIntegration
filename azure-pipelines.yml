@@ -19,7 +19,6 @@ steps:
 
 - script: |
     cd client
-    ls -lrt
     npm install -g @angular/cli
     npm install
     ng build --prod

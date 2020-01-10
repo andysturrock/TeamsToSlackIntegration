@@ -24,16 +24,20 @@ stages:
             
           - script: |
               cd client
+              pwd
+              ls -lrt
               npm install -g @angular/cli
             displayName: 'Install Angular'
 
           - script: |
+              cd client
               pwd
               ls -lrt
               npm install
             displayName: 'Install dependencies'
 
           - script: |
+              cd client
               pwd
               ls -lrt
               ng build --prod

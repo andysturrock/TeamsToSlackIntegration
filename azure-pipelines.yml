@@ -6,9 +6,8 @@
 trigger:
 - master
 
-parameters:
+variables:
   environmentName: ''
-  changeRequest: false
   azureResourceGroup: 'ZNE-MSTC-N-11-ASS-VMS-RSG'
 
 stages:
@@ -81,5 +80,5 @@ stages:
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
-                $accountName = $(az storage account list -g ${{ parameters.azureResourceGroup }} -o json --query "[?tags.environment=='${{ parameters.environmentName }}'].name | [0]").replace('"','')
+                $accountName = $(az storage account list -g ${{ azureResourceGroup }} -o json --query "[?tags.environment=='${{ parameters.environmentName }}'].name | [0]").replace('"','')
                 echo $accountName

@@ -76,9 +76,12 @@ stages:
             displayName: 'Azure CLI - Create Blob Container'
             name: azStorage
             inputs:
-              azureSubscription: 'Spoke-${{ variables.azureResourceGroup }}'
+              #azureSubscription: 'Spoke-${{ variables.azureResourceGroup }}'
+              azureSubscription: 'Spoke-zne-mstc-n-slack-sbc-CE-ZNE-MSTC-N-11'
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
                 $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]").replace('"','')
                 echo $accountName
+
+

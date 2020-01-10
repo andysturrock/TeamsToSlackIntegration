@@ -62,8 +62,8 @@ stages:
             inputs:
               ArtifactName: angular
 
-    - stage: build
-      displayName: Deploy
+    - stage: deploy_dev
+      displayName: Deploy Dev
       dependsOn: [Build]
       jobs:
       - job: deploy

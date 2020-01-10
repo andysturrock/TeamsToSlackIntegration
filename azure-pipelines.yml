@@ -29,11 +29,13 @@ stages:
 
           - script: |
               pwd
+              ls -lrt
               npm install
             displayName: 'Install dependencies'
 
           - script: |
               pwd
+              ls -lrt
               ng build --prod
             displayName: 'Angular build'
             

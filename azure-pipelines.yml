@@ -12,6 +12,7 @@ variables:
 
 stages:
     - stage: build
+      condition: false
       displayName: Build
       dependsOn: []
       jobs:
@@ -28,22 +29,16 @@ stages:
             
           - script: |
               cd client
-              pwd
-              ls -lrt
               npm install -g @angular/cli
             displayName: 'Install Angular'
 
           - script: |
               cd client
-              pwd
-              ls -lrt
               npm install
             displayName: 'Install dependencies'
 
           - script: |
               cd client
-              pwd
-              ls -lrt
               ng build --prod
             displayName: 'Angular build'
             
@@ -64,7 +59,7 @@ stages:
 
     - stage: deploy_dev
       displayName: Deploy Dev
-      dependsOn: [Build]
+      #dependsOn: [Build]
       jobs:
       - job: deploy
         displayName: Deploy Angular app
@@ -81,7 +76,7 @@ stages:
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
-                $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]").replace('"','')
+                $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json)
                 echo $accountName
 
 

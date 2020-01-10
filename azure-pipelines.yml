@@ -6,6 +6,11 @@
 trigger:
 - master
 
+parameters:
+  environmentName: ''
+  changeRequest: false
+  azureResourceGroup: 'ZNE-MSTC-N-11-ASS-VMS-RSG'
+
 stages:
     - stage: build
       displayName: Build
@@ -58,3 +63,23 @@ stages:
             inputs:
               ArtifactName: angular
 
+    - stage: build
+      displayName: Deploy
+      dependsOn: [Build]
+      jobs:
+      - job: deploy
+        displayName: Deploy Angular app
+        pool:
+          name: GenericPool1
+
+        steps:
+          - task: AzureCLI@2
+            displayName: 'Azure CLI - Create Blob Container'
+            name: azStorage
+            inputs:
+              azureSubscription: 'Spoke-${{ parameters.azureResourceGroup }}'
+              scriptType: ps
+              scriptLocation: inlineScript
+              inlineScript: |
+                $accountName = $(az storage account list -g ${{ parameters.azureResourceGroup }} -o json --query "[?tags.environment=='${{ parameters.environmentName }}'].name | [0]").replace('"','')
+                echo $accountName

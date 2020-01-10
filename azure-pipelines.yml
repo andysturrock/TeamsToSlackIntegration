@@ -59,6 +59,7 @@ stages:
 
     - stage: deploy_dev
       displayName: Deploy Dev
+      condition: true
       #dependsOn: [Build]
       jobs:
       - job: deploy

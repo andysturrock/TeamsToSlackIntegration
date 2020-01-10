@@ -6,25 +6,49 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+stages:
+    - stage: build
+      displayName: Build
+      dependsOn: []
+      jobs:
+      - job: build
+        displayName: Build Angular app
+        pool:
+          name: BP-Linux-AgentOS
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '10.x'
+            displayName: 'Install Node.js'
+            
+          - script: |
+              cd client
+              npm install -g @angular/cli
+            displayName: 'Install Angular'
 
-#  workingDirectory: client
+          - script: |
+              pwd
+              npm install
+            displayName: 'Install dependencies'
 
-- script: |
-    cd client
-    npm install -g @angular/cli
-    npm install
-    ng build --prod
-  displayName: 'npm install and build'
+          - script: |
+              pwd
+              ng build --prod
+            displayName: 'Angular build'
+            
 
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(System.DefaultWorkingDirectory)/client/dist'
-    includeRootFolder: false
+          - task: ArchiveFiles@2
+            displayName: 'Create Artifact: angular'
+            inputs:
+              rootFolderOrFile: '$(System.DefaultWorkingDirectory)/client/dist'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/angular.zip'
+              replaceExistingArchive: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact: angular'
+            inputs:
+              ArtifactName: angular
+

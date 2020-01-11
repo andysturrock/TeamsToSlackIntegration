@@ -77,7 +77,7 @@ stages:
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
-                echo "Start json...""
+                echo "Start json..."
                 az storage account list --resource-group ${{ variables.azureResourceGroup }} -o json
                 echo "End json."
                 echo "second json..."

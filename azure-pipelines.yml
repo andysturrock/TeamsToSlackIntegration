@@ -77,6 +77,8 @@ stages:
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
+                $json = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json)
+                echo json=<<<$json>>>
                 $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]")
                 $containerName = 'workshop'
                 echo accountName=<<<$accountName>>>

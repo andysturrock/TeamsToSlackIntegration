@@ -15,7 +15,7 @@ variables:
 
 stages:
     - stage: build
-      condition: false
+      # condition: false
       displayName: Build
       dependsOn: []
       jobs:
@@ -56,14 +56,14 @@ stages:
               replaceExistingArchive: true
 
           - task: PublishBuildArtifacts@1
-            displayName: 'Publish Artifact: angular'
+            displayName: 'Publish Artifact: angular.zip'
             inputs:
               ArtifactName: angular
 
     - stage: deploy_dev
       displayName: Deploy Dev
       condition: true
-      #dependsOn: [Build]
+      dependsOn: [Build]
       jobs:
       - job: deploy
         displayName: Deploy Angular app

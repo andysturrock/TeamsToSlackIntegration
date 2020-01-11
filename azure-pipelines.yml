@@ -75,7 +75,7 @@ stages:
             displayName: 'Azure CLI - Create Storage Account'
             name: azStorageAccountCreate
             inputs:
-              azureSubscription: ${{ azureSubscription }}
+              azureSubscription: '${{ azureSubscription }}'
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
@@ -91,7 +91,7 @@ stages:
             displayName: 'Azure CLI - Create Blob Container'
             name: azStorageContainerCreate
             inputs:
-              azureSubscription: ${{ azureSubscription }}
+              azureSubscription: '${{ azureSubscription }}'
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
@@ -106,7 +106,7 @@ stages:
             displayName: 'AzureBlob File Copy'
             inputs:
               SourcePath: '$(Pipeline.Workspace)/react/build'
-              azureSubscription: ${{ azureSubscription }}
+              azureSubscription: '${{ azureSubscription }}'
               Destination: AzureBlob
               storage: ${{variables.storageAccountName}}
               ContainerName: '$(variables.containerName)'

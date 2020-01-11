@@ -10,7 +10,7 @@ variables:
   environmentName: 'dev'
   azureResourceGroup: 'ZNE-MSTC-N-11-ASS-VMS-RSG'
   azureSubscription: 'Spoke-zne-mstc-n-slack-sbc-CE-ZNE-MSTC-N-11'
-  storageAccountName: 'clientangularapp'
+  storageAccountName: 'slackteamsbridge'
   containerName: 'dist'
 
 stages:
@@ -118,7 +118,7 @@ stages:
                 Write-Host "Delete content of Container"
                 az storage blob delete-batch --account-name ${{variables.storageAccountName}} --source ${{variables.containerName}} --pattern '*'
                 Write-Host "Delete content of Web Container"
-                az storage blob delete-batch --account-name ${{variables.storageAccountName}} --source $web --pattern '*'
+                az storage blob delete-batch --account-name ${{variables.storageAccountName}} --source '$web' --pattern '*'
 
           - task: AzureFileCopy@2
             displayName: 'Copy website files to blob container'

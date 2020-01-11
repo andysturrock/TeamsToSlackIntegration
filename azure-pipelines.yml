@@ -77,7 +77,7 @@ stages:
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
-                $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ parameters.environmentName }}'].name | [0]")
+                $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]")
                 echo $accountName
 
           - task: AzureFileCopy@3

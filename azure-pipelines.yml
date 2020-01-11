@@ -78,7 +78,7 @@ stages:
               scriptLocation: inlineScript
               inlineScript: |
                 echo "Start json..."
-                az storage account create --name SlackTeamsIntegrationClient --resource-group "${{ variables.azureResourceGroup }}" `
+                az storage account create --name SlackTeamsIntegrationUI --resource-group "${{ variables.azureResourceGroup }}" `
                 --access-tier Hot --location westeurope --tags 'environment=dev' --sku Standard_RAGRS --kind StorageV2 --https-only true `
                 --encryption-services file --encryption-services blob
                 echo "End json."

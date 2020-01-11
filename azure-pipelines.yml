@@ -117,6 +117,8 @@ stages:
                 az storage container set-permission --public-access container --account-name ${{variables.storageAccountName}} --name ${{variables.containerName}}
                 Write-Host "Delete content of Container"
                 az storage blob delete-batch --account-name ${{variables.storageAccountName}} --source ${{variables.containerName}} --pattern '*'
+                Write-Host "Delete content of Web Container"
+                az storage blob delete-batch --account-name ${{variables.storageAccountName}} --source $web --pattern '*'
 
           - task: AzureFileCopy@2
             displayName: 'Copy website files to blob container'
@@ -127,11 +129,11 @@ stages:
               storage: ${{variables.storageAccountName}}
               ContainerName: ${{variables.containerName}}
           
-          - task: AzureFileCopy@2
+          - task: AzureFileCopy@3
             displayName: 'Copy website files to blob web container'
             inputs:
-              SourcePath: '$(Pipeline.Workspace)/dist'
+              SourcePath: '$(Pipeline.Workspace)/dist/TeamsToSlackIntegration'
               azureSubscription: '${{variables.azureSubscription}}'
-              Destination: AzureBlob
-              storage: ${{variables.storageAccountName}}
-              ContainerName: $web
+              Destination: 'AzureBlob'
+              storage: '${{variables.storageAccountName}}'
+              ContainerName: '$web'

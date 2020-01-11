@@ -69,8 +69,23 @@ stages:
 
         steps:
           - task: AzureCLI@2
+            displayName: 'Azure CLI - Create Storage Account'
+            name: azStorageAccount
+            inputs:
+              #azureSubscription: 'Spoke-${{ variables.azureResourceGroup }}'
+              azureSubscription: 'Spoke-zne-mstc-n-slack-sbc-CE-ZNE-MSTC-N-11'
+              scriptType: ps
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "Start json..."
+                az storage account create --name SlackTeamsIntegrationClient --resource-group "${{ variables.azureResourceGroup }}" `
+                --access-tier Hot --location westeurope --tags 'environment=dev' --sku Standard_RAGRS --kind StorageV2 --https-only true `
+                --encryption-services file --encryption-services blob
+                echo "End json."
+
+          - task: AzureCLI@2
             displayName: 'Azure CLI - Create Blob Container'
-            name: azStorage
+            name: azStorageContainer
             inputs:
               #azureSubscription: 'Spoke-${{ variables.azureResourceGroup }}'
               azureSubscription: 'Spoke-zne-mstc-n-slack-sbc-CE-ZNE-MSTC-N-11'
@@ -94,3 +109,7 @@ stages:
                 Write-Host "##vso[task.setvariable variable=containerName;isOutput=true]$containerName"
                 Write-Host "Creating Blob Container"
                 echo "az storage container create --public-access container --account-name $accountName --name $containerName"
+                Write-Host "Setting up permission"
+                echo "az storage container set-permission --public-access container --account-name $accountName --name $containerName"
+                Write-Host "Delete content of Container"
+                echo "az storage blob delete-batch --account-name $accountName --source $containerName --pattern '*'"

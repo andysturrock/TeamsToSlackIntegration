@@ -77,5 +77,11 @@ stages:
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
-                $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]")
+                $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]").replace('"','')
+                $containerName = 'workshop'
                 echo accountName=<<<$accountName>>>
+                echo containerName=<<<$containerName>>>
+                Write-Host "##vso[task.setvariable variable=accountName;isOutput=true]$accountName"
+                Write-Host "##vso[task.setvariable variable=containerName;isOutput=true]$containerName"
+                Write-Host "Creating Blob Container"
+                echo az storage container create --public-access container --account-name $accountName --name $containerName

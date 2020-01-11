@@ -80,10 +80,10 @@ stages:
                 echo "Start json...""
                 az storage account list --resource-group ${{ variables.azureResourceGroup }} -o json
                 echo "End json."
-                echo "second json...
+                echo "second json..."
                 az storage account list --resource-group ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name"
                 echo "end 2nd json"
-                echo "3rd json...
+                echo "3rd json..."
                 az storage account list --resource-group ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]"
                 echo "end 3rd json"
                 $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]")

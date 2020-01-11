@@ -77,11 +77,13 @@ stages:
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
-                echo "Start json..."
+                Write-Host "Creating Storage Account"
                 az storage account create --name clientangularapp --resource-group "${{ variables.azureResourceGroup }}" `
                 --access-tier Hot --location westeurope --tags 'environment=dev' --sku Standard_RAGRS --kind StorageV2 --https-only true `
                 --encryption-services file --encryption-services blob
-                echo "End json."
+                Write-Host "Enabling Static website"
+                az storage blob service-properties update --account-name clientangularapp --static-website `
+                --404-document index.html --index-document index.html
 
           - task: AzureCLI@2
             displayName: 'Azure CLI - Create Blob Container'

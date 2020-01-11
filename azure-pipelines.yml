@@ -37,7 +37,7 @@ stages:
 
           - script: |
               cd client
-              npm install
+              npm install --production
             displayName: 'Install dependencies'
 
           - script: |
@@ -56,9 +56,15 @@ stages:
               replaceExistingArchive: true
 
           - task: PublishBuildArtifacts@1
-            displayName: 'Publish Artifact: angular.zip'
+            displayName: 'Publish Build Artifact: angular.zip'
             inputs:
               ArtifactName: angular
+          
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Pipeline Artifact: angular.zip'
+            inputs:
+              path: $(Build.ArtifactStagingDirectory)/angular.zip
+              artifact: WebApp
 
     - stage: deploy_dev
       displayName: Deploy Dev
@@ -71,6 +77,47 @@ stages:
           name: GenericPool1
 
         steps:
+          - task: DownloadPipelineArtifact@2
+            displayName: Download pipeline artifact angular.zip
+            inputs:
+              buildType: 'current'
+              artifactName: 'WebApp'
+              itemPattern: 'angular.zip'
+              targetPath: '$(Pipeline.Workspace)'
+
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                # Write your commands here
+                echo 'Pipeline workspace...'
+                ls -lrt $(Pipeline.Workspace)
+              failOnStderr: true
+
+          - task: DownloadBuildArtifacts@0
+            displayName: Download build artifact angular.zip
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'angular.zip'
+              downloadPath: '$(System.ArtifactsDirectory)'
+          
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                # Write your commands here
+                echo 'System.ArtifactsDirectory...'
+                ls -lrt $(System.ArtifactsDirectory)
+              failOnStderr: true
+
+          - task: ExtractFiles@1
+            displayName: 'Extract website files from artifact'
+            inputs:
+              archiveFilePatterns: '$(Pipeline.Workspace)/angular.zip'
+              destinationFolder: '$(Pipeline.Workspace)/dist'
+              cleanDestinationFolder: true
+
           - task: AzureCLI@2
             displayName: 'Azure CLI - Create Storage Account'
             name: azStorageAccountCreate
@@ -101,12 +148,6 @@ stages:
                 az storage container set-permission --public-access container --account-name ${{variables.storageAccountName}} --name ${{variables.containerName}}
                 Write-Host "Delete content of Container"
                 az storage blob delete-batch --account-name ${{variables.storageAccountName}} --source ${{variables.containerName}} --pattern '*'
-
-          - task: ExtractFiles@1
-            displayName: 'Extract website files from artifact'
-            inputs:
-              archiveFilePatterns: '$(Build.ArtifactStagingDirectory)/angular.zip'
-              destinationFolder: '$(Pipeline.Workspace)/dist'
 
           - task: AzureFileCopy@2
             displayName: 'Copy website files to blob container'

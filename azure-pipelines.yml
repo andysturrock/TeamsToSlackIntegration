@@ -82,7 +82,7 @@ stages:
                 echo End json.
                 echo second json...
                 az storage account list --resource-group ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name
-                end end 2nd json
+                echo end 2nd json
                 $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]")
                 $containerName = 'workshop'
                 echo accountName=<<<$accountName>>>

@@ -87,10 +87,10 @@ stages:
                 az storage account list --resource-group ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]"
                 echo "end 3rd json"
                 $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]")
-                $containerName = 'workshop'
+                $containerName = 'SlackTeamsIntegrationClient'
                 echo accountName=<<<$accountName>>>
                 echo containerName=<<<$containerName>>>
                 Write-Host "##vso[task.setvariable variable=accountName;isOutput=true]$accountName"
                 Write-Host "##vso[task.setvariable variable=containerName;isOutput=true]$containerName"
                 Write-Host "Creating Blob Container"
-                echo az storage container create --public-access container --account-name $accountName --name $containerName
+                echo "az storage container create --public-access container --account-name $accountName --name $containerName"

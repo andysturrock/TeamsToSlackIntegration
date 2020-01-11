@@ -9,6 +9,9 @@ trigger:
 variables:
   environmentName: 'dev'
   azureResourceGroup: 'ZNE-MSTC-N-11-ASS-VMS-RSG'
+  azureSubscription: 'Spoke-zne-mstc-n-slack-sbc-CE-ZNE-MSTC-N-11'
+  storageAccountName: 'clientangularapp'
+  containerName: 'dist'
 
 stages:
     - stage: build
@@ -70,48 +73,40 @@ stages:
         steps:
           - task: AzureCLI@2
             displayName: 'Azure CLI - Create Storage Account'
-            name: azStorageAccount
+            name: azStorageAccountCreate
             inputs:
-              #azureSubscription: 'Spoke-${{ variables.azureResourceGroup }}'
-              azureSubscription: 'Spoke-zne-mstc-n-slack-sbc-CE-ZNE-MSTC-N-11'
+              azureSubscription: ${{ azureSubscription }}
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
                 Write-Host "Creating Storage Account"
-                az storage account create --name clientangularapp --resource-group "${{ variables.azureResourceGroup }}" `
-                --access-tier Hot --location westeurope --tags 'environment=dev' --sku Standard_RAGRS --kind StorageV2 --https-only true `
-                --encryption-services file --encryption-services blob
+                az storage account create --name ${{variables.storageAccountName}} --resource-group "${{ variables.azureResourceGroup }}" `
+                --access-tier Hot --location westeurope --tags 'environment=${{variables.environmentName}}' --sku Standard_RAGRS --kind StorageV2 `
+                --https-only true --encryption-services file --encryption-services blob
                 Write-Host "Enabling Static website"
                 az storage blob service-properties update --account-name clientangularapp --static-website `
                 --404-document index.html --index-document index.html
 
           - task: AzureCLI@2
             displayName: 'Azure CLI - Create Blob Container'
-            name: azStorageContainer
+            name: azStorageContainerCreate
             inputs:
-              #azureSubscription: 'Spoke-${{ variables.azureResourceGroup }}'
-              azureSubscription: 'Spoke-zne-mstc-n-slack-sbc-CE-ZNE-MSTC-N-11'
+              azureSubscription: ${{ azureSubscription }}
               scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
-                echo "Start json..."
-                az storage account list --resource-group ${{ variables.azureResourceGroup }} -o json
-                echo "End json."
-                echo "second json..."
-                az storage account list --resource-group ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name"
-                echo "end 2nd json"
-                echo "3rd json..."
-                az storage account list --resource-group ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]"
-                echo "end 3rd json"
-                $accountName = $(az storage account list -g ${{ variables.azureResourceGroup }} -o json --query "[?tags.environment=='${{ variables.environmentName }}'].name | [0]")
-                $containerName = 'SlackTeamsIntegrationClient'
-                echo accountName=<<<$accountName>>>
-                echo containerName=<<<$containerName>>>
-                Write-Host "##vso[task.setvariable variable=accountName;isOutput=true]$accountName"
-                Write-Host "##vso[task.setvariable variable=containerName;isOutput=true]$containerName"
                 Write-Host "Creating Blob Container"
-                echo "az storage container create --public-access container --account-name $accountName --name $containerName"
+                az storage container create --public-access container --account-name ${{variables.storageAccountName}} --name ${{variables.containerName}}
                 Write-Host "Setting up permission"
-                echo "az storage container set-permission --public-access container --account-name $accountName --name $containerName"
+                az storage container set-permission --public-access container --account-name ${{variables.storageAccountName}} --name ${{variables.containerName}}
                 Write-Host "Delete content of Container"
-                echo "az storage blob delete-batch --account-name $accountName --source $containerName --pattern '*'"
+                az storage blob delete-batch --account-name ${{variables.storageAccountName}} --source ${{variables.containerName}} --pattern '*'
+
+          - task: AzureFileCopy@2
+            displayName: 'AzureBlob File Copy'
+            inputs:
+              SourcePath: '$(Pipeline.Workspace)/react/build'
+              azureSubscription: ${{ azureSubscription }}
+              Destination: AzureBlob
+              storage: ${{variables.storageAccountName}}
+              ContainerName: '$(variables.containerName)'

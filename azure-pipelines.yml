@@ -88,7 +88,7 @@ stages:
                 --404-document index.html --index-document index.html
 
           - task: AzureCLI@2
-            displayName: 'Azure CLI - Create Blob Container'
+            displayName: 'Azure CLI - Create blob container'
             name: azStorageContainerCreate
             inputs:
               azureSubscription: '${{variables.azureSubscription}}'
@@ -102,11 +102,17 @@ stages:
                 Write-Host "Delete content of Container"
                 az storage blob delete-batch --account-name ${{variables.storageAccountName}} --source ${{variables.containerName}} --pattern '*'
 
-          - task: AzureFileCopy@2
-            displayName: 'AzureBlob File Copy'
+          - task: ExtractFiles@1
+            displayName: 'Extract website files from artifact'
             inputs:
-              SourcePath: '$(Build.ArtifactStagingDirectory)/angular.zip'
+              archiveFilePatterns: '$(Build.ArtifactStagingDirectory)/angular.zip'
+              destinationFolder: '$(Pipeline.Workspace)/dist'
+
+          - task: AzureFileCopy@2
+            displayName: 'Copy website files to blob container'
+            inputs:
+              SourcePath: '$(Pipeline.Workspace)/dist'
               azureSubscription: '${{variables.azureSubscription}}'
               Destination: AzureBlob
               storage: ${{variables.storageAccountName}}
-              ContainerName: '$(variables.containerName)'
+              ContainerName: ${{variables.containerName}}

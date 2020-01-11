@@ -54,17 +54,12 @@ stages:
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/angular.zip'
               replaceExistingArchive: true
-
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish Build Artifact: angular.zip'
-            inputs:
-              ArtifactName: angular
           
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Pipeline Artifact: angular.zip'
             inputs:
               path: $(Build.ArtifactStagingDirectory)/angular.zip
-              artifact: WebApp
+              artifact: ClientWebApp
 
     - stage: deploy_dev
       displayName: Deploy Dev
@@ -81,35 +76,9 @@ stages:
             displayName: Download pipeline artifact angular.zip
             inputs:
               buildType: 'current'
-              artifactName: 'WebApp'
+              artifactName: 'ClientWebApp'
               itemPattern: 'angular.zip'
               targetPath: '$(Pipeline.Workspace)'
-
-          - task: Bash@3
-            inputs:
-              targetType: 'inline'
-              script: |
-                # Write your commands here
-                echo 'Pipeline workspace...'
-                ls -lrt $(Pipeline.Workspace)
-              failOnStderr: true
-
-          - task: DownloadBuildArtifacts@0
-            displayName: Download build artifact angular.zip
-            inputs:
-              buildType: 'current'
-              downloadType: 'single'
-              artifactName: 'angular.zip'
-              downloadPath: '$(System.ArtifactsDirectory)'
-          
-          - task: Bash@3
-            inputs:
-              targetType: 'inline'
-              script: |
-                # Write your commands here
-                echo 'System.ArtifactsDirectory...'
-                ls -lrt $(System.ArtifactsDirectory)
-              failOnStderr: true
 
           - task: ExtractFiles@1
             displayName: 'Extract website files from artifact'
@@ -117,6 +86,18 @@ stages:
               archiveFilePatterns: '$(Pipeline.Workspace)/angular.zip'
               destinationFolder: '$(Pipeline.Workspace)/dist'
               cleanDestinationFolder: true
+
+          - task: PowerShell@2
+            inputs:
+              targetType: 'inline'
+              script: |
+                # Write your PowerShell commands here.
+                Write-Host "Hello World"
+                pwd
+                ls
+                cd $(Pipeline.Workspace)
+                ls
+                Write-Host "Goodbye World"
 
           - task: AzureCLI@2
             displayName: 'Azure CLI - Create Storage Account'

@@ -37,7 +37,7 @@ stages:
 
           - script: |
               cd client
-              npm install --production
+              npm install
             displayName: 'Install dependencies'
 
           - script: |

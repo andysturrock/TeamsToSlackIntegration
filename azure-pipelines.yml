@@ -87,18 +87,6 @@ stages:
               destinationFolder: '$(Pipeline.Workspace)/dist'
               cleanDestinationFolder: true
 
-          - task: PowerShell@2
-            inputs:
-              targetType: 'inline'
-              script: |
-                # Write your PowerShell commands here.
-                Write-Host "Hello World"
-                pwd
-                ls
-                cd $(Pipeline.Workspace)
-                ls
-                Write-Host "Goodbye World"
-
           - task: AzureCLI@2
             displayName: 'Azure CLI - Create Storage Account'
             name: azStorageAccountCreate
@@ -138,3 +126,12 @@ stages:
               Destination: AzureBlob
               storage: ${{variables.storageAccountName}}
               ContainerName: ${{variables.containerName}}
+          
+          - task: AzureFileCopy@2
+            displayName: 'Copy website files to blob web container'
+            inputs:
+              SourcePath: '$(Pipeline.Workspace)/dist'
+              azureSubscription: '${{variables.azureSubscription}}'
+              Destination: AzureBlob
+              storage: ${{variables.storageAccountName}}
+              ContainerName: $web

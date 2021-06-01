@@ -9,7 +9,7 @@
     "@microsoft/microsoft-graph-client": "^1.6.0",
     "@slack/rtm-api": "^5.0.2",
     "@slack/web-api": "^5.1.0",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "connect-flash": "^0.1.1",
     "connect-redis": "^3.4.2",
     "cookie-parser": "~1.4.3",
